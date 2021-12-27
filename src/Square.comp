@@ -1,0 +1,31 @@
+#version 450 core
+
+layout(local_size_x = 64) in;
+
+layout(std430, binding = 0) readonly buffer InputBuffer{
+    int matrixsize;
+    uint inData_SSBO[];
+} inputDat;
+
+layout(set = 0, binding = 1) buffer OutputBuffer
+{
+    uint outData[];
+} outputData;
+
+void main(void)
+{
+
+    int workSize = inputDat.matrixsize / 64;
+    int workGroup = gl_WorkGroupID.x;
+
+    for(uint i = workGroup * workSize; i < (workSize * workGroup) + workSize; i++)
+    {
+        outputData.outData[i] = inputDat.inData_SSBO[i % inputDat.matrixsize] * inputDat.inData_SSBO[i / inputDat.matrixsize];
+    }
+
+    /*uint index = gl_GlobalInvocationID.x;
+    uint row = index / inputDat.matrixsize;
+    uint col = index % inputDat.matrixsize;
+
+    outputData.outData[index] = uint(exp( sqrt( inputDat.inData_SSBO[row] * inputDat.inData_SSBO[col]) + exp( inputDat.inData_SSBO[row]) + inputDat.inData_SSBO[col]  ));*/
+}
