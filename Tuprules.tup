@@ -1,0 +1,119 @@
+# Tuprules.tup
+
+
+
+ROOT=$(TUP_CWD)
+OBJ_DIR=$(ROOT)/obj
+BIN_DIR=$(ROOT)/bin
+
+
+#########################
+####	DO NOT EDIT
+### User preferences are defined in preferences.tup
+### You may override these by re-definition in lower Tuprules.tup
+### Overriding these rules is discouraged.
+## No user-servicable parts inside
+## if (removed) warranty = static_cast<void*>(removed);
+##########
+
+
+
+ifndef MODE
+	error CONFIG_MODE must be defined in tup.config
+endif
+ifndef WARN
+	error CONFIG_WARN must be defined in tup.config
+endif
+ifndef WARN_PREFS
+	error CONFIG_WARN_PREFS must be defined in tup.config
+endif
+ifndef CODE_PREFS
+	error CONFIG_CODE_PREFS must be defined in tup.config
+endif
+ifndef LINK_PREFS
+	error CONFIG_LINK_PREFS must be defined in tup.config
+endif
+
+
+
+#######
+##
+##	WARNING FLAG COMPOSITION
+##
+#######
+
+
+
+GCC_WARNING_MINIMUM= -Wall -Wextra -Wundef -Wnull-dereference
+
+GCC_WARNING_RELAXED= -Wpedantic -pedantic-errors -Weffc++ -Wnoexcept -Wuninitialized -Wunused -Wunused-parameter -Winit-self -Wconversion -Wuseless-cast -Wextra-semi -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override  -Wformat-signedness -Wno-format-zero-length -Wmissing-include-dirs -Wshift-overflow=2 -Walloc-zero -Walloca -Wsign-promo -Wconversion -Wduplicated-branches -Wduplicated-cond -Wfloat-equal -Wshadow -Wshadow=local -Wmultiple-inheritance -Wvirtual-inheritance -Wno-virtual-move-assign -Wunsafe-loop-optimizations -Wenum-conversion -Wnormalized -Wpacked -Wredundant-decls -Wmismatched-tags -Wredundant-tags -Wctor-dtor-privacy -Wdeprecated-copy-dtor -Wstrict-null-sentinel -Wold-style-cast -Woverloaded-virtual -Wzero-as-null-pointer-constant -Wconditionally-supported
+
+GCC_WARNING_STRICT= -Werror=pedantic -Wwrite-strings -Wmultiple-inheritance -Wunused-const-variable=2 -Wdouble-promotion -Wpointer-arith -Wcast-align=strict -Wcast-qual -Wconversion -Wsign-conversion -Wimplicit-fallthrough=1 -Wmisleading-indentation -Wdangling-else -Wdate-time -Wformat=2 -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=2 -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Wstringop-overflow=4 -Warray-bounds=2 -Wattribute-alias=2 -Wcatch-value=2 -Wplacement-new=2 -Wtrampolines
+
+ifeq (@(WARN),MINIMUM)
+	GCC_WARNING= $(GCC_WARNING_MINIMUM)
+else
+	ifeq (@(WARN),RELAXED)
+		GCC_WARNING= $(GCC_WARNING_MINIMUM) $(GCC_WARNING_RELAXED)
+	else
+		ifeq (@(WARN),STRICT)
+			GCC_WARNING= $(GCC_WARNING_MINIMUM) $(GCC_WARNING_RELAXED) $(GCC_WARNING_STRICT)
+		else
+			error tup.config CONFIG_WARN must be either MINIMUM or RELAXED or STRICT
+		endif
+	endif
+endif
+
+GCC_WARNING+= @(WARN_PREFS)
+
+
+
+#######
+##
+##	CODE GENERATION FLAGS
+##
+#######
+
+
+
+GCC_CODEGEN= -fno-ident
+GCC_LINKAGE=
+
+ifeq (@(MODE),DEBUG)
+	GCC_CODEGEN+= -Og -g -fstrict-aliasing -fno-omit-frame-pointer -fstack-check -ftrapv -fwrapv -fverbose-asm -femit-class-debug-always 
+else
+	ifeq (@(MODE),PRODUCTION)
+		GCC_CODEGEN+= -Ofast -march=native -fgcse-las -fgcse-sm -fdevirtualize-speculatively -fdevirtualize-at-ltrans -ftree-loop-im -fivopts -ftree-loop-ivcanon -fira-hoist-pressure -fsched-pressure -fsched-spec-load -fipa-pta -flto -ffat-lto-objects -fno-enforce-eh-specs -fstrict-enums
+		GCC_LINKAGE+= -s
+	else
+		error tup.config CONFIG_MODE must be either DEBUG or PRODUCTION
+	endif
+endif
+
+GCC_CODEGEN+= @(CODE_PREFS)
+GCC_LINKAGE+= @(LINK_PREFS)
+
+
+
+#######
+##
+##	FLAGS AND RULE MACRO COMPOSITION
+##
+#######
+
+
+
+COMPILER= g++
+STANDARD= -std=c++20
+C_FLAGS= $(STANDARD) $(GCC_CODEGEN) $(GCC_WARNING) @(INCLUDES) @(LIBS)
+L_FLAGS= $(STANDARD) $(GCC_CODEGEN) $(GCC_LINKAGE) @(INCLUDES) @(LIBS)
+CL_FLAGS= $(STANDARD) $(GCC_WARNING) $(GCC_CODEGEN) @(INCLUDES) @(LIBS)
+
+# compile
+!CC = |> $(COMPILER) $(C_FLAGS) -c -o %o |>
+
+# link
+!LN = |> $(COMPILER) $(L_FLAGS) -o %o |>
+
+# one-step compile and link
+!CL = |> $(COMPILER) $(CL_FLAGS) -o %o |>

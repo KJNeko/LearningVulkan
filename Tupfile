@@ -1,0 +1,9 @@
+include_rules
+
+PROJ=main.exe
+
+: foreach src/*.comp |> glslc %f -o %o |> $(BIN_DIR)/%B.spv
+
+# Compile compilation units in src dir
+: foreach src/*.cpp |> !CC %f |> $(OBJ_DIR)/%B.o <objs>
+: <objs> |> !LN %<objs> |> $(BIN_DIR)/$(PROJ)
