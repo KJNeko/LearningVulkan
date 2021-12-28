@@ -1,0 +1,16 @@
+*.exe
+*.o
+*.old
+*.test
+*.lnk
+*.log
+*.spv
+bin/
+obj/
+dep/
+asm/
+tup.config
+.tup/
+.vscode/
+workspace.code-workspace
+vgcore.*
