@@ -1,0 +1,4 @@
+khronos_validation.enables = VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
+khronos_validation.printf_verbose = 'true'
+khronos_validation.printf_buffer_size = 1024
+khronos_validation.printf_to_stdout = 'true'
