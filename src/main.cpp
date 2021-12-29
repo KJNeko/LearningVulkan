@@ -317,7 +317,8 @@ vk::raii::DescriptorSets create_descriptor_sets(
 	return vk::raii::DescriptorSets( device, ci );
 }
 
-std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>> create_descriptor_set(
+std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>>
+create_descriptor_set(
 	const vk::raii::Buffer& buffer,
 	const uint32_t offset,
 	const uint32_t size,
@@ -332,11 +333,13 @@ std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>> cre
 	constexpr vk::DescriptorImageInfo* imagepointer { nullptr };
 
 	std::cout << "Buffer descriptor set made" << std::endl;
-	;
+
 	return std::pair( vk::WriteDescriptorSet( *descriptor_set, binding, array, descriptorCount, type, imagepointer, bi.get() ), bi );
 }
 
-void update_descriptor_set( vk::raii::Device& device, std::vector < std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>>>& set )
+void update_descriptor_set(
+	const vk::raii::Device& device,
+	const std::vector < std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>>>& set)
 {
 	//remake vec
 	std::vector<vk::WriteDescriptorSet> remade_set;
@@ -444,10 +447,10 @@ int main() try
 	stopwatch::Stopwatch mainwatch( "Main" );
 	mainwatch.start();
 
-	vk::raii::Context context;
+	const vk::raii::Context context;
 	verify_version_requirements( context );
-	vk::raii::Instance instance { create_instance( context ) };
-	vk::raii::PhysicalDevice physical_device { std::move( vk::raii::PhysicalDevices( instance ).front() ) };
+	const vk::raii::Instance instance { create_instance( context ) };
+	const vk::raii::PhysicalDevice physical_device { std::move( vk::raii::PhysicalDevices( instance ).front() ) };
 
 	const uint32_t queue_family_index {
 		index_of_first_queue_family(
@@ -457,27 +460,29 @@ int main() try
 
 	debug_print( context, physical_device, queue_family_index );
 
-	auto device { create_device( physical_device, queue_family_index ) };
-	auto command_pool { create_command_pool( device, queue_family_index ) };
-	auto command_buffer { create_command_buffer( device, command_pool ) };
+	const auto device { create_device( physical_device, queue_family_index ) };
+	const auto command_pool { create_command_pool( device, queue_family_index ) };
+	const auto command_buffer { create_command_buffer( device, command_pool ) };
 
 	constexpr uint32_t num_of_members { 512 };
 	constexpr uint32_t blocksize { num_of_members * sizeof( uint32_t ) };
 	constexpr uint32_t in_size { blocksize + sizeof( uint32_t ) * 2 };
 	constexpr uint32_t out_size { blocksize * blocksize };
 
-	auto input_buffer { create_buffer( device, in_size, queue_family_index ) };
-	auto output_buffer { create_buffer( device, out_size, queue_family_index ) };
+	const auto input_buffer { create_buffer( device, in_size, queue_family_index ) };
+	const auto output_buffer { create_buffer( device, out_size, queue_family_index ) };
 
 	//Memory
 
 	constexpr auto memory_flags { vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent };
 
-	auto input_memory { create_device_memory( device, physical_device, input_buffer, memory_flags ) };
-	auto output_memory { create_device_memory( device, physical_device, output_buffer, memory_flags ) };
+	const auto input_memory { create_device_memory( device, physical_device, input_buffer, memory_flags ) };
+	const auto output_memory { create_device_memory( device, physical_device, output_buffer, memory_flags ) };
 
 	// TODO range wrapper
-	uint32_t* in_buffer_data = static_cast< uint32_t* > ( input_memory.mapMemory( 0, sizeof( uint32_t ) * ( num_of_members + 2 ) ) );
+	uint32_t* const in_buffer_data{
+		static_cast< uint32_t* > ( input_memory.mapMemory( 0, in_size ) )
+	};
 
 	constexpr uint32_t offset = 1;
 
@@ -487,13 +492,14 @@ int main() try
 		in_buffer_data[i] = i;
 	}
 
+	/// PRINT
 	std::cout << "Input Buffer:" << std::endl;
-
 	for( size_t i = 0; i < num_of_members + offset; ++i )
 	{
 		std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
 	}
 	std::cout << std::endl;
+	/// PRINT
 
 	constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
 	input_memory.unmapMemory();
@@ -501,38 +507,52 @@ int main() try
 	output_buffer.bindMemory( *output_memory, io_buffer_bind_offset );
 
 	//Loading shader
-	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "./Square.spv" ) };
+	const vk::raii::ShaderModule module1{
+		create_shader_module_from_file( device, "./Square.spv" )
+	};
 
 	//Discriptors
 	constexpr uint32_t descriptor_count { 1 };
-	const std::vector<vk::DescriptorSetLayoutBinding> descriptorSetBindings =
-	{
+	const std::vector<vk::DescriptorSetLayoutBinding> descriptorSetBindings {
 		vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute ),
 		vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute )
 	};
 
-	vk::raii::DescriptorSetLayout descriptor_set_layout = create_descriptor_set_layout( device, descriptorSetBindings );
+	const vk::raii::DescriptorSetLayout descriptor_set_layout {
+		create_descriptor_set_layout( device, descriptorSetBindings )
+	};
 
 	//Pipeline
-	vk::raii::PipelineLayout pipeline_layout = create_pipeline_layout( device, descriptor_set_layout );
+	const vk::raii::PipelineLayout pipeline_layout{
+		create_pipeline_layout( device, descriptor_set_layout )
+	};
 
-	vk::raii::Pipeline pipeline = create_pipeline( device, pipeline_layout, module1, "main", vk::ShaderStageFlagBits::eCompute );
+	const vk::raii::Pipeline pipeline{
+		create_pipeline(
+			device,
+			pipeline_layout,
+			module1,
+			"main",
+			vk::ShaderStageFlagBits::eCompute
+		)
+	};
 
-	vk::raii::DescriptorPool descriptor_pool = create_descriptor_pool( device, vk::DescriptorType::eStorageBuffer, 2 );
+	const vk::raii::DescriptorPool descriptor_pool{
+		create_descriptor_pool( device, vk::DescriptorType::eStorageBuffer, 2 )
+	};
 
-	vk::raii::DescriptorSets descriptor_sets = create_descriptor_sets( device, descriptor_pool, descriptor_set_layout );
+	const vk::raii::DescriptorSets descriptor_sets{
+		create_descriptor_sets( device, descriptor_pool, descriptor_set_layout )
+	};
 
-	vk::raii::DescriptorSet descriptor_set = std::move( descriptor_sets.front() );
+	const vk::raii::DescriptorSet& descriptor_set( descriptor_sets.front() );
 
-	//vk::DescriptorBufferInfo bi1( *input_buffer, 0, in_size );
-
-	std::vector set =
-	{
+	const std::vector sets {
 		create_descriptor_set( input_buffer, 0, in_size, descriptor_set, 0, 0, 1, vk::DescriptorType::eStorageBuffer ),
 		create_descriptor_set( output_buffer, 0, out_size, descriptor_set, 1, 0, 1, vk::DescriptorType::eStorageBuffer )
 	};
 
-	update_descriptor_set( device, set );
+	update_descriptor_set( device, sets );
 
 	dispatch_command_buffer(
 		command_buffer,
@@ -551,11 +571,14 @@ int main() try
 	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
 	constexpr vk::DeviceSize out_map_offset{ 0 };
-	[[maybe_unused]] int32_t* out_buffer_ptr {
+	[[maybe_unused]] int32_t* const out_buffer_ptr {
 		static_cast< int32_t* >( output_memory.mapMemory( out_map_offset, out_size ))
 	};
+
+	/// PRINT
+	/*
 	std::cout << "Output Buffer:" << std::endl;
-	for( size_t i = 0; i < num_of_members * num_of_members; ++i )
+	for( size_t i = 0; i < out_size; ++i ) // spammy...
 	{
 		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
 		if( ( i + 1 ) % num_of_members == 0 )
@@ -564,6 +587,7 @@ int main() try
 		}
 	}
 	//*/
+	/// PRINT
 
 	output_memory.unmapMemory();
 
