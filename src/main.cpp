@@ -214,7 +214,7 @@ vk::raii::ShaderModule create_shader_module_from_file(
 	}
 	else
 	{
-		throw std::runtime_error( "Failed to open shader file" + path.string() );
+		throw std::runtime_error( "Failed to open shader file: " + path.string() );
 	}
 
 	return create_shader_module( device, buf );
@@ -468,7 +468,7 @@ int main() try
 	output_buffer.bindMemory( *output_memory, io_buffer_bind_offset );
 
 	//Loading shader
-	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "/Square.spv" ) };
+	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "./Square.spv" ) };
 
 	//Discriptors
 	constexpr uint32_t descriptor_count { 1 };
