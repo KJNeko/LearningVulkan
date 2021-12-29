@@ -9,6 +9,7 @@ bin/
 obj/
 dep/
 asm/
+build/
 tup.config
 .tup/
 .vscode/
