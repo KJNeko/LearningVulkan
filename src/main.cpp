@@ -367,6 +367,20 @@ void dispatch_command_buffer(
 	command_buffer.end();
 }
 
+
+auto create_waitable_fence(
+	const vk::raii::Device& device,
+	const vk::raii::CommandBuffer& command_buffer,
+	const uint32_t queue_family_index,
+	const uint32_t queue_index = 0)
+{
+	vk::raii::Fence fence{ device.createFence({}) };
+	const vk::raii::Queue queue{ device.getQueue( queue_family_index, queue_index ) };
+	const vk::SubmitInfo submit_info( nullptr, nullptr, *command_buffer, nullptr );
+	queue.submit( submit_info, *fence );
+	return fence;
+}
+
 /// <DEBUG PRINTING>
 void debug_print( const std::string_view message )
 {
@@ -497,7 +511,6 @@ int main() try
 		vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute )
 	};
 
-
 	vk::raii::DescriptorSetLayout descriptor_set_layout = create_descriptor_set_layout( device, descriptorSetBindings );
 
 	//Pipeline
@@ -532,15 +545,15 @@ int main() try
 		num_of_members / 4,
 		1
 	);
-	vk::raii::Queue queue = device.getQueue( queue_family_index, 0 );
-	vk::raii::Fence fence = device.createFence( vk::FenceCreateInfo() );
 
-	const vk::SubmitInfo submit_info( nullptr, nullptr, *command_buffer, nullptr );
-	queue.submit( submit_info, *fence );
+	const auto fence { create_waitable_fence( device, command_buffer, queue_family_index ) };
+	constexpr uint64_t timeout{ 10 };
+	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
-	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, 10 ) );
-	[[maybe_unused]] int32_t* out_buffer_ptr = static_cast< int32_t* >( output_memory.mapMemory( 0, out_size ) );
-	/*
+	constexpr vk::DeviceSize out_map_offset{ 0 };
+	[[maybe_unused]] int32_t* out_buffer_ptr {
+		static_cast< int32_t* >( output_memory.mapMemory( out_map_offset, out_size ))
+	};
 	std::cout << "Output Buffer:" << std::endl;
 	for( size_t i = 0; i < num_of_members * num_of_members; ++i )
 	{
@@ -555,7 +568,7 @@ int main() try
 	output_memory.unmapMemory();
 
 	mainwatch.stop();
-	std::cout << mainwatch << std::endl;
+	std::cout << '\n' << mainwatch << std::endl;
 }
 catch( const vk::SystemError& e )
 {
