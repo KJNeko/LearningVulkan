@@ -28,8 +28,8 @@ class Stopwatch
 protected:
 	const std::string m_name;
 	const std::chrono::time_point<clock> m_unset{};
-	std::vector<std::chrono::time_point<clock>> m_laps;
-	std::chrono::time_point<clock> m_start, m_stop;
+	std::vector<std::chrono::time_point<clock>> m_laps{};
+	std::chrono::time_point<clock> m_start{}, m_stop{};
 
 	[[nodiscard]]
 	static std::string formatted(std::chrono::nanoseconds elapsed)
