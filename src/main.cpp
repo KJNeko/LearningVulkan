@@ -257,20 +257,38 @@ vk::raii::Pipeline create_pipeline(
 
 	switch( stage )
 	{
-	break;case vk::ShaderStageFlagBits::eCompute:
+	using enum vk::ShaderStageFlagBits;
+	break;case eCompute:
 	{
-		vk::ComputePipelineCreateInfo ci(
+		const vk::ComputePipelineCreateInfo ci(
 			{},
 			shader_stage_info,
 			*pipeline_layout
 		);
-
-		return device.createComputePipeline( device.createPipelineCache( vk::PipelineCacheCreateInfo() ), ci );
+		return device.createComputePipeline(
+			device.createPipelineCache( vk::PipelineCacheCreateInfo() ),
+			ci
+		);
 	}
-
-	break;default:
-		throw std::runtime_error( "Unsupported shader stage" );
+	break;case eTessellationControl:
+	break;case eTessellationEvaluation:
+	break;case eGeometry:
+	break;case eFragment:
+	break;case eAllGraphics:
+	break;case eAll:
+	break;case eRaygenKHR: // eRaygenNV
+	break;case eAnyHitKHR:
+	break;case eClosestHitKHR: // eClosestHitNV
+	break;case eMissKHR: // eMissNV
+	break;case eIntersectionKHR: // eIntersectionNV
+	break;case eCallableKHR: // eCallableNV
+	break;case eTaskNV:
+	break;case eMeshNV:
+	break;case eSubpassShadingHUAWEI:
+	break;case eVertex:
+	break;default:break;
 	}
+	throw std::runtime_error( "Unsupported shader stage" );
 }
 
 vk::raii::DescriptorPool create_descriptor_pool(
