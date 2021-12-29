@@ -348,6 +348,25 @@ void update_descriptor_set( vk::raii::Device& device, std::vector < std::pair<vk
 	device.updateDescriptorSets( remade_set, nullptr );
 }
 
+void dispatch_command_buffer(
+	const vk::raii::CommandBuffer& command_buffer,
+	const vk::CommandBufferUsageFlagBits buffer_usage_flags,
+	const vk::raii::Pipeline& pipeline,
+	const vk::raii::PipelineLayout& pipeline_layout,
+	const vk::raii::DescriptorSet& descriptor_set,
+	const vk::PipelineBindPoint bind_point,
+	const uint32_t dispatch_x,
+	const uint32_t dispatch_y, // TODO vec3?
+	const uint32_t dispatch_z)
+{
+	const vk::CommandBufferBeginInfo bi { buffer_usage_flags };
+	command_buffer.begin( bi );
+	command_buffer.bindPipeline( bind_point , *pipeline );
+	command_buffer.bindDescriptorSets( bind_point, *pipeline_layout, 0, *descriptor_set, nullptr );
+	command_buffer.dispatch( dispatch_x, dispatch_y, dispatch_z );
+	command_buffer.end();
+}
+
 /// <DEBUG PRINTING>
 void debug_print( const std::string_view message )
 {
@@ -500,21 +519,19 @@ int main() try
 		create_descriptor_set( output_buffer, 0, out_size, descriptor_set, 1, 0, 1, vk::DescriptorType::eStorageBuffer )
 	};
 
-
 	update_descriptor_set( device, set );
 
-	//device.updateDescriptorSets( writeDescriptorSets, nullptr );
-
-	vk::CommandBufferBeginInfo command_buffer_begin_info;
-	command_buffer_begin_info.setFlags( vk::CommandBufferUsageFlagBits::eOneTimeSubmit );
-
-	command_buffer.begin( command_buffer_begin_info );
-	command_buffer.bindPipeline( vk::PipelineBindPoint::eCompute, *pipeline );
-	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *pipeline_layout, 0, *descriptor_set, nullptr );
-
-	command_buffer.dispatch( num_of_members / 4, num_of_members / 4, 1 );
-	command_buffer.end();
-
+	dispatch_command_buffer(
+		command_buffer,
+		vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+		pipeline,
+		pipeline_layout,
+		descriptor_set,
+		vk::PipelineBindPoint::eCompute,
+		num_of_members / 4,
+		num_of_members / 4,
+		1
+	);
 	vk::raii::Queue queue = device.getQueue( queue_family_index, 0 );
 	vk::raii::Fence fence = device.createFence( vk::FenceCreateInfo() );
 
