@@ -522,9 +522,8 @@ int main() try
 	queue.submit( submit_info, *fence );
 
 	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, 10 ) );
-
+	[[maybe_unused]] int32_t* out_buffer_ptr = static_cast< int32_t* >( output_memory.mapMemory( 0, out_size ) );
 	/*
-	int32_t* out_buffer_ptr = static_cast< int32_t* >( output_memory.mapMemory( 0, out_size ) );
 	std::cout << "Output Buffer:" << std::endl;
 	for( size_t i = 0; i < num_of_members * num_of_members; ++i )
 	{
