@@ -524,18 +524,18 @@ int main() try
 
 	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, 10 ) );
 
-
+	/*
 	int32_t* out_buffer_ptr = static_cast< int32_t* >( output_memory.mapMemory( 0, out_size ) );
-
-	//std::cout << "Output Buffer:" << std::endl;
-	//for( size_t i = 0; i < num_of_members * num_of_members; ++i )
-	//{
-	//	std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
-	//	if( ( i + 1 ) % num_of_members == 0 )
-	//	{
-	//		std::cout << std::endl;
-	//	}
-	//}
+	std::cout << "Output Buffer:" << std::endl;
+	for( size_t i = 0; i < num_of_members * num_of_members; ++i )
+	{
+		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
+		if( ( i + 1 ) % num_of_members == 0 )
+		{
+			std::cout << std::endl;
+		}
+	}
+	//*/
 
 	output_memory.unmapMemory();
 
