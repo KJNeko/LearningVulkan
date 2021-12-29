@@ -51,7 +51,7 @@ include_directories(${FGL_DIR})
 add_custom_command(
     OUTPUT "${SOURCE_DIR}/Square.spv"
     #COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/dxc -T cs_6_0 -E "Main" -spirv -fvk-use-dx-layout -fspv-target-env=vulkan1.1 -Fo "${SOURCE_DIR}/Square.spv" "${SOURCE_DIR}/Square.hlsl"
-    COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/glslc "${SOURCE_DIR}/Square.comp" -o "${SOURCE_DIR}/Square.sqv"
+    COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/glslc "${SOURCE_DIR}/Square.comp" -o "${SOURCE_DIR}/Square.spv"
     DEPENDS "${SOURCE_DIR}/Square.comp"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Buiding Shaders"

@@ -468,7 +468,7 @@ int main() try
 	output_buffer.bindMemory( *output_memory, io_buffer_bind_offset );
 
 	//Loading shader
-	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "./src/Square.sqv" ) };
+	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "./src/Square.spv" ) };
 
 	//Discriptors
 	constexpr uint32_t descriptor_count { 1 };
@@ -493,7 +493,6 @@ int main() try
 	vk::raii::DescriptorSet descriptor_set = std::move( descriptor_sets.front() );
 
 	//vk::DescriptorBufferInfo bi1( *input_buffer, 0, in_size );
-
 
 	std::vector set =
 	{
