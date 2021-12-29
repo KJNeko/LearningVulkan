@@ -10,8 +10,10 @@ obj/
 dep/
 asm/
 build/
-tup.config
+CMakeFiles/
 .tup/
 .vscode/
+tup.config
+CMakeCache.txt
 workspace.code-workspace
 vgcore.*
