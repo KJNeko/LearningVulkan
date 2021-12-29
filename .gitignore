@@ -17,3 +17,12 @@ tup.config
 CMakeCache.txt
 workspace.code-workspace
 vgcore.*
+
+#kj specific
+VulkanCompute
+HydrusExport/
+*.jpg
+*.png
+*.cmake
+Makefile
+*.sqv
