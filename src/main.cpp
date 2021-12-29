@@ -443,9 +443,8 @@ int main() try
 	auto input_memory { create_device_memory( device, physical_device, input_buffer, memory_flags ) };
 	auto output_memory { create_device_memory( device, physical_device, output_buffer, memory_flags ) };
 
-
-
-	int32_t* in_buffer_data = static_cast< int32_t* > ( input_memory.mapMemory( 0, sizeof( uint32_t ) * ( num_of_members + 2 ) ) );
+	// TODO range wrapper
+	uint32_t* in_buffer_data = static_cast< uint32_t* > ( input_memory.mapMemory( 0, sizeof( uint32_t ) * ( num_of_members + 2 ) ) );
 
 	constexpr uint32_t offset = 1;
 
