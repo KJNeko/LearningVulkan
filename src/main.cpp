@@ -317,39 +317,54 @@ vk::raii::DescriptorSets create_descriptor_sets(
 	return vk::raii::DescriptorSets( device, ci );
 }
 
-std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>>
-create_descriptor_set(
-	const vk::raii::Buffer& buffer,
-	const uint32_t offset,
-	const uint32_t size,
-	const vk::raii::DescriptorSet& descriptor_set,
-	const uint32_t binding,
-	const uint32_t array,
-	const uint32_t descriptorCount,
-	const vk::DescriptorType type )
+template <std::size_t N_max_sets>
+class write_descriptor_set_manager
 {
-	std::shared_ptr<vk::DescriptorBufferInfo> bi = std::make_shared<vk::DescriptorBufferInfo>( *buffer, offset, size );
+	std::array<vk::DescriptorBufferInfo, N_max_sets> m_infos{};
+	std::array<vk::WriteDescriptorSet, N_max_sets> m_sets{};
 
-	constexpr vk::DescriptorImageInfo* imagepointer { nullptr };
+public:
+	write_descriptor_set_manager() = default;
 
-	std::cout << "Buffer descriptor set made" << std::endl;
-
-	return std::pair( vk::WriteDescriptorSet( *descriptor_set, binding, array, descriptorCount, type, imagepointer, bi.get() ), bi );
-}
-
-void update_descriptor_set(
-	const vk::raii::Device& device,
-	const std::vector < std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>>>& set)
-{
-	//remake vec
-	std::vector<vk::WriteDescriptorSet> remade_set;
-	for( auto& pair : set )
+	void create_set(
+		const std::size_t index,
+		const vk::raii::Buffer& buffer,
+		const uint32_t offset,
+		const uint32_t size,
+		const vk::raii::DescriptorSet& descriptor_set,
+		const uint32_t binding,
+		const uint32_t array,
+		const vk::DescriptorType type)
 	{
-		remade_set.push_back( pair.first );
+		if (index >= N_max_sets)
+		{
+			throw std::out_of_range(
+				"invalid write_descriptor_set_manager::create_set index");
+		}
+
+		m_infos[index] = vk::DescriptorBufferInfo(*buffer, offset, size);
+		constexpr uint32_t descriptor_count{ 1 };
+		constexpr vk::DescriptorImageInfo* image_info_ptr { nullptr };
+		m_sets[index] = vk::WriteDescriptorSet(
+			*descriptor_set,
+			binding,
+			array,
+			descriptor_count,
+			type,
+			image_info_ptr,
+			&m_infos[index]
+		);
 	}
 
-	device.updateDescriptorSets( remade_set, nullptr );
-}
+	const vk::DescriptorBufferInfo& info(const std::size_t index) const
+	{ return m_infos.at(index); }
+
+	const vk::WriteDescriptorSet& set(const std::size_t index) const
+	{ return m_sets.at(index); }
+
+	const decltype(m_sets)& sets() const
+	{ return m_sets; }
+};
 
 void dispatch_command_buffer(
 	const vk::raii::CommandBuffer& command_buffer,
@@ -547,12 +562,12 @@ int main() try
 
 	const vk::raii::DescriptorSet& descriptor_set( descriptor_sets.front() );
 
-	const std::vector sets {
-		create_descriptor_set( input_buffer, 0, in_size, descriptor_set, 0, 0, 1, vk::DescriptorType::eStorageBuffer ),
-		create_descriptor_set( output_buffer, 0, out_size, descriptor_set, 1, 0, 1, vk::DescriptorType::eStorageBuffer )
-	};
-
-	update_descriptor_set( device, sets );
+	{ // it appears that these don't need to exist after the update
+		write_descriptor_set_manager<2> descriptors;
+		descriptors.create_set(0, input_buffer, 0, in_size, descriptor_set, 0, 0, vk::DescriptorType::eStorageBuffer );
+		descriptors.create_set(1, output_buffer, 0, out_size, descriptor_set, 1, 0, vk::DescriptorType::eStorageBuffer);
+		device.updateDescriptorSets( descriptors.sets(), nullptr );
+	}
 
 	dispatch_command_buffer(
 		command_buffer,
