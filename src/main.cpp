@@ -76,11 +76,11 @@ uint32_t index_of_first_queue_family(
 	vk::QueueFlagBits flag,
 	const std::vector<vk::QueueFamilyProperties>& properties )
 {
-	const auto has_flag { // lambda function for find_if predicate
+	const auto has_flag {
 		[flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool
-		{
- return static_cast< bool >( qfp.queueFlags & flag );
-}
+		{ // lambda function for find_if predicate
+ 			return static_cast< bool >( qfp.queueFlags & flag );
+		}
 	};
 	if( const auto it { std::ranges::find_if( properties, has_flag ) };
 		it != properties.cend() )
@@ -153,12 +153,19 @@ std::pair<uint32_t, vk::DeviceSize> get_memory_type(
 	const vk::MemoryPropertyFlags& flags,
 	const vk::PhysicalDeviceMemoryProperties& device_memory_properties )
 {
-	for( uint32_t current_memory_index = 0; current_memory_index < device_memory_properties.memoryTypeCount; ++current_memory_index )
+	for(
+		uint32_t current_memory_index = 0;
+		current_memory_index < device_memory_properties.memoryTypeCount;
+		++current_memory_index )
 	{
-		vk::MemoryType memoryType = device_memory_properties.memoryTypes[current_memory_index];
+		const vk::MemoryType memoryType{
+			device_memory_properties.memoryTypes[current_memory_index]
+		};
 		if( flags & memoryType.propertyFlags )
 		{
-			vk::DeviceSize memory_heap_size = device_memory_properties.memoryHeaps[memoryType.heapIndex].size;
+			const vk::DeviceSize memory_heap_size{
+				 device_memory_properties.memoryHeaps[memoryType.heapIndex].size
+			};
 			return std::pair { current_memory_index, memory_heap_size };
 		}
 	}
@@ -169,32 +176,41 @@ auto create_device_memory(
 	const vk::raii::Device& device,
 	const vk::raii::PhysicalDevice& physical_device,
 	const vk::raii::Buffer& buffer,
-	const vk::MemoryPropertyFlags& flags
-)
+	const vk::MemoryPropertyFlags& flags)
 {
 	const auto [index, size] { get_memory_type( flags, physical_device.getMemoryProperties() ) };
-	uint32_t index2 = index;
-	vk::MemoryAllocateInfo memInfo( buffer.getMemoryRequirements().size, index2 );
+	const vk::MemoryAllocateInfo memInfo( buffer.getMemoryRequirements().size, index );
 
 	return device.allocateMemory( memInfo );
 }
 
-vk::raii::ShaderModule create_shader_module( const vk::raii::Device& device, std::vector<char>& data )
+vk::raii::ShaderModule create_shader_module(
+	const vk::raii::Device& device,
+	const std::vector<char>& data )
 {
-	vk::ShaderModuleCreateInfo ci( vk::ShaderModuleCreateFlags(), data.size(), reinterpret_cast< uint32_t* >( data.data() ) );
+	const vk::ShaderModuleCreateInfo ci(
+		vk::ShaderModuleCreateFlags(),
+		data.size(),
+		reinterpret_cast< const uint32_t* >(
+			reinterpret_cast<const void*>(data.data())
+		)
+	);
 	return vk::raii::ShaderModule( device, ci );
 }
 
-vk::raii::ShaderModule create_shader_module_from_file( const vk::raii::Device& device, const std::filesystem::path& path )
+vk::raii::ShaderModule create_shader_module_from_file(
+	const vk::raii::Device& device,
+	const std::filesystem::path& path )
 {
 	std::vector<char> buf;
 
-	if( std::ifstream ifs( path.string(), std::ios::binary | std::ios::ate ); ifs )
+	if( std::ifstream ifs( path.string(), std::ios::binary | std::ios::ate );
+		ifs )
 	{
 		ifs.exceptions( ifs.badbit | ifs.failbit | ifs.eofbit );
 		buf.resize( static_cast< uint32_t >( ifs.tellg() ) );
 		ifs.seekg( 0 );
-		ifs.read( buf.data(), buf.size() );
+		ifs.read( buf.data(), static_cast<std::streamsize>(buf.size()) );
 	}
 	else
 	{
@@ -208,7 +224,11 @@ vk::raii::DescriptorSetLayout create_descriptor_set_layout(
 	const vk::raii::Device& device,
 	const std::vector<vk::DescriptorSetLayoutBinding>& bindings )
 {
-	vk::DescriptorSetLayoutCreateInfo ci( {}, bindings.size(), bindings.data() );
+	const vk::DescriptorSetLayoutCreateInfo ci(
+		{},
+		static_cast<uint32_t>(bindings.size()),
+		bindings.data()
+	);
 	return vk::raii::DescriptorSetLayout( device, ci );
 }
 
@@ -216,8 +236,7 @@ vk::raii::PipelineLayout create_pipeline_layout(
 	const vk::raii::Device& device,
 	const vk::raii::DescriptorSetLayout& descriptor_set_layout )
 {
-	constexpr uint32_t layerCount = 1;
-	vk::PipelineLayoutCreateInfo ci( {}, *descriptor_set_layout );
+	const vk::PipelineLayoutCreateInfo ci( {}, *descriptor_set_layout );
 	return vk::raii::PipelineLayout( device, ci );
 }
 
@@ -229,7 +248,7 @@ vk::raii::Pipeline create_pipeline(
 	const std::string& init_function_name,
 	const vk::ShaderStageFlagBits stage )
 {
-	vk::PipelineShaderStageCreateInfo shader_stage_info(
+	const vk::PipelineShaderStageCreateInfo shader_stage_info(
 		{},
 		stage,
 		*shader,
@@ -254,21 +273,20 @@ vk::raii::Pipeline create_pipeline(
 	}
 }
 
-//Input: vk::DescriptorType type, uint32_t DescriptorCount
-//Output: vk::DescriptorPool
 vk::raii::DescriptorPool create_descriptor_pool(
 	const vk::raii::Device& device,
 	const vk::DescriptorType type,
 	const uint32_t DescriptorCount )
 {
-	vk::DescriptorPoolSize poolSize = { type, DescriptorCount };
-	vk::DescriptorPoolCreateInfo poolInfo = {
+	constexpr uint32_t max_sets { 1 };
+	constexpr uint32_t pool_size_count { 1 };
+	const vk::DescriptorPoolSize poolSize { type, DescriptorCount };
+	const vk::DescriptorPoolCreateInfo poolInfo {
 		vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-		1,
-		1,
+		max_sets,
+		pool_size_count,
 		&poolSize
 	};
-
 	return vk::raii::DescriptorPool( device, poolInfo );
 }
 
@@ -277,18 +295,14 @@ vk::raii::DescriptorSets create_descriptor_sets(
 	const vk::raii::DescriptorPool& pool,
 	const vk::raii::DescriptorSetLayout& layout )
 {
-	vk::DescriptorSetAllocateInfo ci( *pool, *layout );
-
+	const vk::DescriptorSetAllocateInfo ci( *pool, *layout );
 	return vk::raii::DescriptorSets( device, ci );
 }
-
-
 
 std::pair<vk::WriteDescriptorSet, std::shared_ptr<vk::DescriptorBufferInfo>> create_descriptor_set(
 	const vk::raii::Buffer& buffer,
 	const uint32_t offset,
 	const uint32_t size,
-
 	const vk::raii::DescriptorSet& descriptor_set,
 	const uint32_t binding,
 	const uint32_t array,
@@ -316,18 +330,12 @@ void update_descriptor_set( vk::raii::Device& device, std::vector < std::pair<vk
 	device.updateDescriptorSets( remade_set, nullptr );
 }
 
-
 /// <DEBUG PRINTING>
 void debug_print( const std::string_view message )
 {
 	if constexpr( debug_printing )
 		std::cout << message << std::endl;
 }
-
-
-
-
-
 
 void debug_print(
 	const vk::raii::Context& context,
@@ -421,11 +429,10 @@ int main() try
 
 	int32_t* in_buffer_data = static_cast< int32_t* > ( input_memory.mapMemory( 0, sizeof( uint32_t ) * ( num_of_members + 2 ) ) );
 
-	uint32_t offset = 1;
+	constexpr uint32_t offset = 1;
 
 	in_buffer_data[0] = num_of_members;
-
-	for( size_t i = 0 + offset; i < num_of_members + offset; ++i )
+	for( uint32_t i = 0 + offset; i < num_of_members + offset; ++i )
 	{
 		in_buffer_data[i] = i;
 	}
@@ -438,21 +445,20 @@ int main() try
 	}
 	std::cout << std::endl;
 
+	constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
 	input_memory.unmapMemory();
-
-
-
-	input_buffer.bindMemory( *input_memory, 0 );
-	output_buffer.bindMemory( *output_memory, 0 );
+	input_buffer.bindMemory( *input_memory, io_buffer_bind_offset );
+	output_buffer.bindMemory( *output_memory, io_buffer_bind_offset );
 
 	//Loading shader
-	vk::raii::ShaderModule module1 = create_shader_module_from_file( device, "./src/Square.sqv" );
+	vk::raii::ShaderModule module1{ create_shader_module_from_file( device, "./src/Square.sqv" ) };
 
 	//Discriptors
+	constexpr uint32_t descriptor_count { 1 };
 	const std::vector<vk::DescriptorSetLayoutBinding> descriptorSetBindings =
 	{
-		vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute ),
-		vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute )
+		vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute ),
+		vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute )
 	};
 
 
@@ -481,9 +487,6 @@ int main() try
 
 	update_descriptor_set( device, set );
 
-
-
-
 	//device.updateDescriptorSets( writeDescriptorSets, nullptr );
 
 	vk::CommandBufferBeginInfo command_buffer_begin_info;
@@ -498,8 +501,8 @@ int main() try
 
 	vk::raii::Queue queue = device.getQueue( queue_family_index, 0 );
 	vk::raii::Fence fence = device.createFence( vk::FenceCreateInfo() );
-	vk::SubmitInfo submit_info( nullptr, nullptr, *command_buffer, nullptr );
 
+	const vk::SubmitInfo submit_info( nullptr, nullptr, *command_buffer, nullptr );
 	queue.submit( submit_info, *fence );
 
 	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, 10 ) );
@@ -517,9 +520,7 @@ int main() try
 	//	}
 	//}
 
-
 	output_memory.unmapMemory();
-
 
 	mainwatch.stop();
 	std::cout << mainwatch << std::endl;
