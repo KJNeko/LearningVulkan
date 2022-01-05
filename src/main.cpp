@@ -477,7 +477,17 @@ int main() try
 	stopwatch::Stopwatch mainwatch( "Main" );
 	mainwatch.start();
 
-	fgl::vulkan::AppInfo info( "VulkanCompute", 0, "Vk1", 0, VK_API_VERSION_1_2, { "VK_LAYER_KHRONOS_validation" }, {} );
+	fgl::vulkan::AppInfo info(
+		"VulkanCompute",
+		0,
+		"Vk1",
+		0,
+		VK_API_VERSION_1_2,
+		{ "VK_LAYER_KHRONOS_validation" },
+		{},
+		{},
+		{}
+	);
 
 	fgl::vulkan::Vulkan inst( info );
 
