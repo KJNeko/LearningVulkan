@@ -544,7 +544,7 @@ int main() try
 	};
 
 
-	for( size_t i = 0; i < in_size; ++i )
+	for( uint32_t i = 0; i < in_size; ++i )
 	{
 		in_buffer_data[i] = i;
 	}
