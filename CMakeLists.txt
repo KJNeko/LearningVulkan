@@ -37,10 +37,8 @@ endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #inclusion of project files#
-set(FORMS_DIR "${CMAKE_SOURCE_DIR}/ui")
-set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
-set(FGL_DIR "${CMAKE_SOURCE_DIR}/fglheaders")
+
 
 
 include_directories(${FORMS_DIR})
@@ -49,21 +47,20 @@ include_directories(${SOURCE_DIR})
 include_directories(${FGL_DIR})
 
 add_custom_command(
-    OUTPUT "${SOURCE_DIR}/Square.spv"
+    OUTPUT "${CMAKE_SOURCE_DIR}/Square.spv"
     #COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/dxc -T cs_6_0 -E "Main" -spirv -fvk-use-dx-layout -fspv-target-env=vulkan1.1 -Fo "${SOURCE_DIR}/Square.spv" "${SOURCE_DIR}/Square.hlsl"
-    COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/glslc "${SOURCE_DIR}/Square.comp" -o "${CMAKE_BINARY_DIR}/Square.spv"
+    COMMAND /home/kj16609/Desktop/1.2.198.1/x86_64/bin/glslc "${SOURCE_DIR}/Square.comp" -o "${CMAKE_SOURCE_DIR}/Square.spv"
     DEPENDS "${SOURCE_DIR}/Square.comp"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Buiding Shaders"
 )
 
-add_custom_target(ComputeShader DEPENDS "${CMAKE_BINARY_DIR}/Square.spv")
+add_custom_target(ComputeShader DEPENDS "${CMAKE_SOURCE_DIR}/Square.spv")
 
 file(GLOB_RECURSE SOURCES
-    "${FORMS_DIR}/*.ui"
-    "${INCLUDE_DIR}/*.h"
     "${SOURCE_DIR}/*.cpp"
     "#{SOURCE_DIR}/*.hlsl"
+    "#{SOURCE_DIR}/*.comp"
 )
 
 #opencv inclusion#
