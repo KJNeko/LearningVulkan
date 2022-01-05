@@ -77,7 +77,7 @@ namespace fgl::vulkan
 	{
 
 		vk::raii::DeviceMemory m_memory;
-		std::vector<size_t> bufferoffsets;
+		std::vector<size_t> bufferoffsets{};
 
 	public:
 
