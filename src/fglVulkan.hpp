@@ -20,10 +20,10 @@ namespace fgl::vulkan
 		const char* engineName;
 		uint32_t engineVersion;
 		uint32_t apiVersion;
-		std::vector<const char*> layer;
-		std::vector<const char*> extentions;
-		uint32_t queue_count;
-		float queue_priority;
+		std::vector<const char*> layer{};
+		std::vector<const char*> extentions{};
+		uint32_t queue_count{};
+		float queue_priority{};
 	};
 
 
