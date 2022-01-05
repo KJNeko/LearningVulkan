@@ -490,15 +490,27 @@ int main() try
 
 	vk::DeviceSize size = 512;
 
+/* vector being stupid
+
 	std::vector<fgl::vulkan::Buffer> buffers
 	{
 		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
 		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
 	};
+*/
+
+	std::vector<fgl::vulkan::Buffer> buffers;
+	buffers.emplace_back(inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0);
+	buffers.push_back(fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 ));
 
 
 	return 1;
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -651,12 +663,6 @@ int main() try
 
 	mainwatch.stop();
 	std::cout << '\n' << mainwatch << std::endl;
-
-
-
-
-
-
 }
 catch( const vk::SystemError& e )
 {
