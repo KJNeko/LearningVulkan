@@ -499,6 +499,15 @@ int main() try
 	};
 */
 
+/* this would work because array isn't stupid
+
+	std::array buffers
+	{
+		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
+		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
+	};
+*/
+
 	std::vector<fgl::vulkan::Buffer> buffers;
 	buffers.emplace_back(inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0);
 	buffers.push_back(fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 ));
