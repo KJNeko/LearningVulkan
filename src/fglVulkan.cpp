@@ -8,10 +8,10 @@ using namespace fgl::vulkan;
 
 //BUFFER
 vk::raii::Buffer Buffer::create_buffer(
-    Vulkan& vulkan,
-    vk::DeviceSize& size,
-    vk::BufferUsageFlagBits& usageflags,
-    vk::SharingMode& sharingmode )
+    const Vulkan& vulkan,
+    const vk::DeviceSize size,
+    const vk::BufferUsageFlagBits usageflags,
+    const vk::SharingMode sharingmode )
 {
     constexpr uint32_t number_of_family_indexes { 1 };
 
@@ -78,7 +78,7 @@ vk::raii::DeviceMemory Memory::create_device_memory(
 
 
 //VULKAN
-uint32_t Vulkan::index_of_first_queue_family( const vk::QueueFlagBits flag )
+uint32_t Vulkan::index_of_first_queue_family( const vk::QueueFlagBits flag ) const
 {
     const auto has_flag {
         [flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool

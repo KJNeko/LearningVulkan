@@ -52,11 +52,11 @@ namespace fgl::vulkan
 		Buffer() = delete;
 
 		Buffer(
-			Vulkan& vulkan,
-			vk::DeviceSize& size,
-			vk::BufferUsageFlagBits usageflags,
-			vk::SharingMode sharingmode,
-			uint32_t _binding )
+			const Vulkan& vulkan,
+			const vk::DeviceSize& size,
+			const vk::BufferUsageFlagBits usageflags,
+			const vk::SharingMode sharingmode,
+			const uint32_t _binding )
 			:
 			buffer( create_buffer( vulkan, size, usageflags, sharingmode ) ),
 			binding( _binding )
@@ -65,10 +65,10 @@ namespace fgl::vulkan
 		Buffer( Buffer&& ) = default;
 
 		vk::raii::Buffer create_buffer(
-			Vulkan& vulkan,
-			vk::DeviceSize& size,
-			vk::BufferUsageFlagBits& usageflags,
-			vk::SharingMode& sharingmode );
+			const Vulkan& vulkan,
+			const vk::DeviceSize size,
+			const vk::BufferUsageFlagBits usageflags,
+			const vk::SharingMode sharingmode );
 
 	};
 
