@@ -46,8 +46,8 @@ namespace fgl::vulkan
 	{
 	public:
 
-		vk::raii::Buffer buffer;
 		uint32_t binding;
+		vk::raii::Buffer buffer;
 
 		Buffer() = delete;
 
@@ -58,8 +58,8 @@ namespace fgl::vulkan
 			const vk::SharingMode sharingmode,
 			const uint32_t _binding )
 			:
-			buffer( create_buffer( vulkan, size, usageflags, sharingmode ) ),
-			binding( _binding )
+			binding( _binding ),
+			buffer( create_buffer( vulkan, size, usageflags, sharingmode ) )
 		{}
 
 		Buffer( Buffer&& ) = default;
