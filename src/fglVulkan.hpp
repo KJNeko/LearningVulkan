@@ -115,7 +115,7 @@ namespace fgl::vulkan
 
 
 
-		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag );
+		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
 		vk::raii::Instance create_instance( const AppInfo& info );
 
