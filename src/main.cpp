@@ -544,9 +544,9 @@ int main() try
 	};
 
 
-	for( uint32_t i = 0; i < in_size; ++i )
+	for( size_t i = 0; i < in_size; ++i )
 	{
-		in_buffer_data[i] = i;
+		in_buffer_data[i] = static_cast<uint32_t>(i);
 	}
 
 	std::cout << "Input Buffer:" << std::endl;
