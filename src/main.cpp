@@ -15,8 +15,8 @@
 
 #include "stopwatch.hpp"
 
-#include "fglVulkan.hpp"
-
+#include "fvulkan/context.hpp"
+#include "fvulkan/memory.hpp"
 
 constexpr bool debug_printing {
 #ifndef NDEBUG
@@ -486,40 +486,76 @@ int main() try
 		{ "VK_LAYER_KHRONOS_validation" }
 	);
 
-	fgl::vulkan::Vulkan inst( info );
+	fgl::vulkan::Context inst( info );
 
 	vk::DeviceSize size = 512;
 
-/* vector being stupid
+	/* vector being stupid
 
-	std::vector<fgl::vulkan::Buffer> buffers
-	{
-		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
-		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
-	};
-*/
+		std::vector<fgl::vulkan::Buffer> buffers
+		{
+			fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
+			fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
+		};
+	*/
 
-/* this would work because array isn't stupid
+	// this would work because array isn't stupid
 
+		//Instance ref, size of buffer, bufferflag, sharingmode, binding(for the shader)
 	std::array buffers
 	{
 		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
 		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
 	};
-*/
+	//Using array method since it shouldn't be resized anyways.
 
-	std::vector<fgl::vulkan::Buffer> buffers;
-	buffers.emplace_back(inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0);
-	buffers.push_back(fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 ));
+	//Allocate a single memory segment for the buffers being passed in
+	/*
+
+	AMD and Nvidia have seperate heap types however...
+	AMD DOES have the 256MB cluster of memory that is extremely fast for both CPU and GPU
+	(TODO:Research resizable bar for AMD gpus.)
+	Perhaps ditching the idea of allocating buffers into a single heap would be a better idea.
+	*/
+
+
+	//eHostVisible is 'slower' then non eHostVisible memory on certian GPUs. If the memory is not needed to be access on the cpu
+	//IE: inter-communication/transfer between two shaders then it doesn't need to be visible
+
+
+	/*
+	Flag meanings for vk::MemoryPropertyFlags
+
+	eDeviceLocal : Memory that is optimal for the GPU only, Not mappable.
+	eHostVisible : Memory that can be mapped to the host via vkMapMemory
+	eHostCoherent : Memory that specieis host cache management (If enabled vkFlush and vkInvalidate at nore required)
+	eHostCached : Memory that is cached on the host.
+
+	There is a bunch more but so far they are not important for what I do.
+	*/
+
+
+	vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+	fgl::vulkan::Memory memheap( inst, buffers, flags );
+
+
+
+
+
+
+
+
+
+
 
 
 	return 1;
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -564,7 +600,7 @@ int main() try
 
 	for( size_t i = 0; i < in_size; ++i )
 	{
-		in_buffer_data[i] = static_cast<uint32_t>(i);
+		in_buffer_data[i] = static_cast< uint32_t >( i );
 	}
 
 	std::cout << "Input Buffer:" << std::endl;
