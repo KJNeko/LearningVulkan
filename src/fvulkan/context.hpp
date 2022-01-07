@@ -12,10 +12,6 @@ namespace fgl::vulkan
 
     struct AppInfo
     {
-        const char* appName;
-        uint32_t appVersion;
-        const char* engineName;
-        uint32_t engineVersion;
         uint32_t apiVersion;
         std::vector<const char*> layer {};
         std::vector<const char*> extentions {};

@@ -30,7 +30,7 @@ namespace fgl::vulkan
 
     vk::raii::Instance Context::create_instance( const AppInfo& info )
     {
-        const vk::ApplicationInfo appInfo( info.appName, info.appVersion, info.engineName, info.engineVersion, info.apiVersion );
+        const vk::ApplicationInfo appInfo( "VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion );
         const vk::InstanceCreateInfo ci(
             vk::InstanceCreateFlags {}, &appInfo,
             static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
