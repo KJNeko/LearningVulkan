@@ -6,7 +6,7 @@
 #include <sstream> // used for API version exception
 #include <filesystem>
 #include <fstream>
-
+#include <bitset>
 
 #include <string_view>
 #include <iostream> // cout, cerr, endl
@@ -17,6 +17,7 @@
 
 #include "fvulkan/context.hpp"
 #include "fvulkan/memory.hpp"
+#include "fvulkan/pipeline.hpp"
 
 constexpr bool debug_printing {
 #ifndef NDEBUG
@@ -469,7 +470,7 @@ void debug_print(
 	}
 }
 /// </DEBUG PRINTING>
-
+#include <unordered_map>
 
 int main() try
 {
@@ -478,36 +479,16 @@ int main() try
 	mainwatch.start();
 
 	fgl::vulkan::AppInfo info(
-		"VulkanCompute",
-		0,
-		"Vk1",
-		0,
 		VK_API_VERSION_1_2,
-		{ "VK_LAYER_KHRONOS_validation" }
+		{ "VK_LAYER_KHRONOS_validation" },
+		{},
+		1,
+		0.0
 	);
 
 	fgl::vulkan::Context inst( info );
 
 	vk::DeviceSize size = 512;
-
-	/* vector being stupid
-
-		std::vector<fgl::vulkan::Buffer> buffers
-		{
-			fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
-			fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
-		};
-	*/
-
-	// this would work because array isn't stupid
-
-		//Instance ref, size of buffer, bufferflag, sharingmode, binding(for the shader)
-	std::array buffers
-	{
-		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0 ),
-		fgl::vulkan::Buffer( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1 )
-	};
-	//Using array method since it shouldn't be resized anyways.
 
 	//Allocate a single memory segment for the buffers being passed in
 	/*
@@ -535,31 +516,86 @@ int main() try
 	*/
 
 
-	vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-	fgl::vulkan::Memory memheap( inst, buffers, flags );
+	constexpr vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+	constexpr vk::MemoryPropertyFlags dflags = vk::MemoryPropertyFlagBits::eDeviceLocal;
+
+	std::vector<fgl::vulkan::Buffer> buffers;
+
+	//binding : set
+
+	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0, 0, flags, vk::DescriptorType::eStorageBuffer );
+	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, 0, flags, vk::DescriptorType::eStorageBuffer );
+	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0, 1, dflags, vk::DescriptorType::eStorageBuffer );
+	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, 2, dflags, vk::DescriptorType::eStorageBuffer );
+
+	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "/home/kj16609/Desktop/Projects/testing/Square.spv" ), std::string( "main" ), buffers );
+
+	fgl::vulkan::Pipeline fipeline( inst, std::filesystem::path( "/home/kj16609/Desktop/Projects/testing/Square.spv" ), std::string( "main" ), buffers );
+
+
+	void* test = buffers.at( 1 ).get_memory();
+
+	return 0;
+
+	/*
+
+		SHA256
+
+
+		Constants
+		K = Cube root of first 64 prime numbers
+
+		PADDING
+		Put 1 after message
+		Add zeros until 512 - 64 bits
+		last 64 bits are the length of the message (Before padding)
+
+
+
+		https://www.youtube.com/watch?v=nduoUEHrK_4
+
+	*/
+
+	/*const std::array msg = { 'a','b','c', 'd','e','f','g' };
+
+	constexpr int padsize = ( 512 - ( msg.size() % 512 ) ) - 64;
+
+	std::vector<char> msgpad;
+	msgpad.resize( msg.size() + padsize + 64 );
+
+	memcpy( msgpad.data(), msg.data(), msg.size() );
+
+	//constants
+	char one = static_cast< char >( 0b10000000 );
+
+	memcpy( msgpad.data() + msg.size(), &one, sizeof( char ) );
+
+	for( size_t i = 0; i < msgpad.size(); ++i )
+	{
+		if( i % ( 64 / 8 ) == 0 )
+		{
+			std::cout << std::endl;
+		}
+		std::cout << std::bitset<8>( msgpad.at( i ) );
+	}
+
+	std::cout << std::endl;
+
+	std::cout << "padsize:" << padsize << std::endl;
+
+*/
+//Padd
 
 
 
 
-
-
-
-
-
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 
 
 	return 1;
-
-
-
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 	const vk::raii::Context context;
 	verify_version_requirements( context );
