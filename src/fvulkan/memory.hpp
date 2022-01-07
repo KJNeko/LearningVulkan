@@ -14,9 +14,12 @@ namespace fgl::vulkan
     class Buffer
     {
     public:
-
         uint32_t binding;
+        uint32_t set;
+        vk::DeviceSize bytesize;
         vk::raii::Buffer buffer;
+        vk::raii::DeviceMemory memory;
+        vk::DescriptorType buffer_type;
 
         Buffer() = delete;
 
@@ -25,13 +28,24 @@ namespace fgl::vulkan
             const vk::DeviceSize& size,
             const vk::BufferUsageFlagBits usageflags,
             const vk::SharingMode sharingmode,
-            const uint32_t _binding )
+            const uint32_t _binding,
+            const uint32_t _set,
+            const vk::MemoryPropertyFlags flags,
+            const vk::DescriptorType type )
             :
             binding( _binding ),
-            buffer( create_buffer( context, size, usageflags, sharingmode ) )
-        {}
+            set( _set ),
+            bytesize( size ),
+            buffer( create_buffer( context, size, usageflags, sharingmode ) ),
+            memory( create_device_memory( context, flags ) ),
+            buffer_type( type )
+        {
+            buffer.bindMemory( *memory, 0 );
+        }
 
-        Buffer( Buffer&& ) = default;
+        std::pair<uint32_t, vk::DeviceSize> get_memory_type(
+            const vk::PhysicalDeviceMemoryProperties& device_memory_properties,
+            const vk::MemoryPropertyFlags flags );
 
         vk::raii::Buffer create_buffer(
             const Context& context,
@@ -39,56 +53,20 @@ namespace fgl::vulkan
             const vk::BufferUsageFlagBits usageflags,
             const vk::SharingMode sharingmode );
 
-    };
-
-
-
-    class Memory
-    {
-
-        vk::raii::DeviceMemory m_memory;
-        std::vector<size_t> bufferoffsets {};
-        vk::MemoryPropertyFlags flags;
-
-    public:
-
-        Memory() = delete;
-
-        template <typename T>
-        Memory(
-            const Context& context,
-            const T& buffs,
-            const vk::MemoryPropertyFlags& _flags )
-            :
-            m_memory( create_device_memory( context, buffs, _flags ) ),
-            flags( _flags )
-        {}
-
-        std::pair<uint32_t, vk::DeviceSize> get_memory_type(
-            const vk::MemoryPropertyFlags& flags,
-            const vk::PhysicalDeviceMemoryProperties& device_memory_properties );
-
-        template <typename T>
         vk::raii::DeviceMemory create_device_memory(
             const Context& context,
-            const T& buffs,
-            const vk::MemoryPropertyFlags& flags )
+            const vk::MemoryPropertyFlags flags )
         {
-            size_t accum { 0 };
+            const auto [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
 
-            const auto [memindex, size] { get_memory_type( flags, context.physical_device.getMemoryProperties() ) };
+            const vk::MemoryAllocateInfo memInfo( bytesize, memindex );
 
-            for( auto& buff : buffs )
-            {
-                bufferoffsets.push_back( accum );
-                accum += buff.buffer.getMemoryRequirements().size;
-                if( accum >= size )
-                {
-                    throw std::runtime_error( "Allocating too much memory" );
-                }
-            }
-            const vk::MemoryAllocateInfo memInfo( accum, memindex );
             return context.device.allocateMemory( memInfo );
+        }
+
+        void* get_memory()
+        {
+            return memory.mapMemory( 0, bytesize );
         }
 
     };

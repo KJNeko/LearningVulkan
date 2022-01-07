@@ -29,9 +29,9 @@ namespace fgl::vulkan
     }
 
     //MEMORY
-    std::pair<uint32_t, vk::DeviceSize> Memory::get_memory_type(
-        const vk::MemoryPropertyFlags& flags,
-        const vk::PhysicalDeviceMemoryProperties& device_memory_properties )
+    std::pair<uint32_t, vk::DeviceSize> Buffer::get_memory_type(
+        const vk::PhysicalDeviceMemoryProperties& device_memory_properties,
+        const vk::MemoryPropertyFlags flags )
     {
         for(
             uint32_t current_memory_index = 0;
@@ -51,5 +51,7 @@ namespace fgl::vulkan
         }
         throw std::runtime_error( "Failed to get memory type." );
     }
+
+
 
 }
