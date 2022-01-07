@@ -6,5 +6,6 @@ LIBS=-lvulkan-1
 : foreach src/*.comp |> glslc %f -o %o |> $(BIN_DIR)/%B.spv
 
 # Compile compilation units in src dir
+: foreach src/fvulkan/*.cpp |> !CC %f |> $(OBJ_DIR)/%B.o <objs>
 : foreach src/*.cpp |> !CC %f |> $(OBJ_DIR)/%B.o <objs>
 : <objs> |> !LN %<objs> $(LIBS) |> $(BIN_DIR)/$(PROJ)
