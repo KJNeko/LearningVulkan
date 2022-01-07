@@ -1,23 +1,25 @@
 # tup.config.DEFAULT
 
 ####	Default Preferences
-# copy this file and remove the .DEFAULT extension
+#
+# This file serves as a default user-configuration template.
+# copy this file and remove the .DEFAULT extension.
 # tup.config is git-ignored and is meant to contain personal preferences
 # and user-system-specific information such as custom directory includes.
-# 
-# Some reconfiguration may be required.
 #
-CONFIG_CXX_SPEC=-std=c++20
+####
 
-####	System Specific Dependencies
-# These are specific to this project
-# include dirs is passed to the compiler
-# lib dirs are passed to the linker
-#
-#CONFIG_PERSONAL_INCLUDE_DIRS=-isystem"C:/VulkanSDK/1.2.198.1/Include"
-#CONFIG_PERSONAL_LIB_DIRS=-L"C:/VulkanSDK/1.2.198.1/Lib"
-CONFIG_PERSONAL_INCLUDE_DIRS=
-CONFIG_PERSONAL_LIB_DIRS=
+
+####	Dependencies & Directories
+# These directories are user- and system-specific.
+# includes are passed to the compiler, libraries are passed to the linker.
+# Example:
+#	CONFIG_PERSONAL_INCLUDE_DIRS= -isystem"C:/VulkanSDK/1.2.198.1/Include"
+#	CONFIG_PERSONAL_LIBRARY_DIRS= -L"C:/VulkanSDK/1.2.198.1/Lib"
+#	CONFIG_PERSONAL_LIBRARY_LINK= -lvulkan-1
+CONFIG_PERSONAL_INCLUDE_DIRS= 
+CONFIG_PERSONAL_LIBRARY_DIRS= 
+CONFIG_PERSONAL_LIBRARY_LINK= 
 
 ####	Build Mode (default: DEBUG)
 # options: DEBUG PRODUCTION
@@ -26,6 +28,7 @@ CONFIG_MODE=DEBUG
 
 ####	Warnings (default: STRICT)
 # options: MINIMUM RELAXED STRICT
+# NOTE: To disable warnings, don't. Write better code.
 #
 CONFIG_WARN=STRICT
 
@@ -34,6 +37,6 @@ CONFIG_WARN=STRICT
 # CODE_PREFS is for code gen. and is used in both compiling and linking
 # LINK_PREFS is exclusively for linking (e.g. -static -lasan)
 #
-CONFIG_WARN_PREFS=-fmax-errors=3 -Wpadded -Winvalid-imported-macros
-CONFIG_CODE_PREFS=-fno-omit-frame-pointer -fno-rtti
+CONFIG_WARN_PREFS= -fmax-errors=3 -Wpadded -fconcepts-diagnostics-depth=4
+CONFIG_CODE_PREFS= -fno-analyzer
 CONFIG_LINK_PREFS=

@@ -1,17 +1,30 @@
 # Tuprules.tup
-
-
+### PROJECT SPECIFIC SETTINGS
 
 ROOT=$(TUP_CWD)
+#TEST_DIR=$(ROOT)/test
+#TEST_OUT_DIR=$(TEST_DIR)/output
+#TEST_OBJ_DIR=$(TEST_OUT_DIR)/obj
+#TEST_BIN_DIR=$(TEST_OUT_DIR)/bin
+
+PROJECT_LANGUAGE_SPECIFICATION= -std=c++20
+PROJECT_WARNING=
+PROJECT_CODEGEN= -fno-omit-frame-pointer -fno-rtti
+PROJECT_LINKAGE= -shared-libgcc
+#PROJECT_INCLUDES= -I"$(ROOT)/include/"
+PROJECT_INCLUDES=
+PROJECT_LIBRARIES=
+
 OBJ_DIR=$(ROOT)/obj
 BIN_DIR=$(ROOT)/bin
 
 
+
 #########################
-####	DO NOT EDIT
-### User preferences are defined in preferences.tup
-### You may override these by re-definition in lower Tuprules.tup
-### Overriding these rules is discouraged.
+####	DO NOT EDIT BELLOW HERE
+### Preferences and system-specific directories are defined in tup.config
+### You may override these rules by re-definition in a lower Tuprules.tup
+### Overriding these rules is discouraged
 ## No user-servicable parts inside
 ## if (removed) warranty = static_cast<void*>(removed);
 ##########
@@ -46,7 +59,7 @@ endif
 
 GCC_WARNING_MINIMUM= -Wall -Wextra -Wundef -Wnull-dereference
 
-GCC_WARNING_RELAXED= -Wpedantic -pedantic-errors -Weffc++ -Wnoexcept -Wuninitialized -Wunused -Wunused-parameter -Winit-self -Wconversion -Wuseless-cast -Wextra-semi -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override  -Wformat-signedness -Wno-format-zero-length -Wmissing-include-dirs -Wshift-overflow=2 -Walloc-zero -Walloca -Wsign-promo -Wconversion -Wduplicated-branches -Wduplicated-cond -Wfloat-equal -Wshadow -Wshadow=local -Wmultiple-inheritance -Wvirtual-inheritance -Wno-virtual-move-assign -Wunsafe-loop-optimizations -Wenum-conversion -Wnormalized -Wpacked -Wredundant-decls -Wmismatched-tags -Wredundant-tags -Wctor-dtor-privacy -Wdeprecated-copy-dtor -Wstrict-null-sentinel -Wold-style-cast -Woverloaded-virtual -Wzero-as-null-pointer-constant -Wconditionally-supported
+GCC_WARNING_RELAXED= -Wpedantic -pedantic-errors -Weffc++ -Wnoexcept -Wuninitialized -Wunused -Wunused-parameter -Winit-self -Wconversion -Wuseless-cast -Wextra-semi -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override  -Wformat-signedness -Wno-format-zero-length -Wmissing-include-dirs -Wshift-overflow=2 -Walloc-zero -Walloca -Wsign-promo -Wconversion -Wduplicated-branches -Wduplicated-cond -Wfloat-equal -Wshadow -Wshadow=local -Wmultiple-inheritance -Wvirtual-inheritance -Wno-virtual-move-assign -Wunsafe-loop-optimizations -Wnormalized -Wpacked -Wredundant-decls -Wmismatched-tags -Wredundant-tags -Wctor-dtor-privacy -Wdeprecated-copy-dtor -Wstrict-null-sentinel -Wold-style-cast -Woverloaded-virtual -Wzero-as-null-pointer-constant -Wconditionally-supported
 
 GCC_WARNING_STRICT= -Werror=pedantic -Wwrite-strings -Wmultiple-inheritance -Wunused-const-variable=2 -Wdouble-promotion -Wpointer-arith -Wcast-align=strict -Wcast-qual -Wconversion -Wsign-conversion -Wimplicit-fallthrough=1 -Wmisleading-indentation -Wdangling-else -Wdate-time -Wformat=2 -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=2 -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Wstringop-overflow=4 -Warray-bounds=2 -Wattribute-alias=2 -Wcatch-value=2 -Wplacement-new=2 -Wtrampolines
 
@@ -80,18 +93,18 @@ GCC_CODEGEN= -fno-ident
 GCC_LINKAGE=
 
 ifeq (@(MODE),DEBUG)
-	GCC_CODEGEN+= -Og -g -fstrict-aliasing -fno-omit-frame-pointer -fstack-check -ftrapv -fwrapv -fverbose-asm -femit-class-debug-always 
+	GCC_CODEGEN+= -Og -g -fstrict-aliasing -fno-omit-frame-pointer -fstack-check -ftrapv -fwrapv -fverbose-asm -femit-class-debug-always -fanalyzer
 else
 	ifeq (@(MODE),PRODUCTION)
-		GCC_CODEGEN+= -Ofast -march=native -fgcse-las -fgcse-sm -fdevirtualize-speculatively -fdevirtualize-at-ltrans -ftree-loop-im -fivopts -ftree-loop-ivcanon -fira-hoist-pressure -fsched-pressure -fsched-spec-load -fipa-pta -flto -ffat-lto-objects -fno-enforce-eh-specs -fstrict-enums
+		GCC_CODEGEN+= -Ofast -march=native -fgcse-las -fgcse-sm -fdeclone-ctor-dtor -fdevirtualize-speculatively -fdevirtualize-at-ltrans -ftree-loop-im -fivopts -ftree-loop-ivcanon -fira-hoist-pressure -fsched-pressure -fsched-spec-load -fipa-pta -flto -ffat-lto-objects -fno-enforce-eh-specs -fstrict-enums
 		GCC_LINKAGE+= -s
 	else
 		error tup.config CONFIG_MODE must be either DEBUG or PRODUCTION
 	endif
 endif
 
-GCC_CODEGEN+= @(CODE_PREFS)
-GCC_LINKAGE+= @(LINK_PREFS)
+GCC_CODEGEN+= $(PROJECT_INCLUDES) @(CODE_PREFS)
+GCC_LINKAGE+= $(PROJECT_LIBRARIES) @(LINK_PREFS)
 
 
 
@@ -101,17 +114,30 @@ GCC_LINKAGE+= @(LINK_PREFS)
 ##
 #######
 
+
+
 COMPILER= g++
-STANDARD= @(CXX_SPEC)
-C_FLAGS= $(STANDARD) $(GCC_CODEGEN) $(GCC_WARNING) @(PERSONAL_INCLUDE_DIRS)
-L_FLAGS= $(STANDARD) $(GCC_CODEGEN) $(GCC_LINKAGE) @(PERSONAL_LIB_DIRS)
-CL_FLAGS= $(STANDARD) $(GCC_WARNING) $(GCC_CODEGEN) @(PERSONAL_INCLUDE_DIRS) @(PERSONAL_LIB_DIRS)
+WARNING= $(GCC_WARNING) $(PROJECT_WARNING)
+CODEGEN= $(GCC_CODEGEN) $(PROJECT_CODEGEN)
+LINKAGE= $(GCC_LINKAGE) $(PROJECT_LINKAGE)
+
+LANGUAGE= $(PROJECT_LANGUAGE_SPECIFICATION)
+
+C_FLAGS= $(LANGUAGE) $(CODEGEN) $(GCC_WARNING) @(PERSONAL_INCLUDE_DIRS)
+L_FLAGS= $(LANGUAGE) $(CODEGEN) $(CODEGEN) @(PERSONAL_LIBRARY_DIRS) @(PERSONAL_LIBRARY_LINK)
+CL_FLAGS= $(LANGUAGE) $(GCC_WARNING) $(CODEGEN) @(PERSONAL_INCLUDE_DIRS) @(PERSONAL_LIBRARY_DIRS) @(PERSONAL_LIBRARY_LINK)
 
 # compile
-!CC = |> $(COMPILER) $(C_FLAGS) -c -o %o |>
+!CC = |> ^ [C] %b^ $(COMPILER) $(C_FLAGS) -c -o %o %f |>
 
 # link
-!LN = |> $(COMPILER) $(L_FLAGS) -o %o |>
+!LN = |> ^ [L] %b^ $(COMPILER) $(L_FLAGS) -o %o %f |>
 
 # one-step compile and link
-!CL = |> $(COMPILER) $(CL_FLAGS) -o %o |>
+!CL = |> ^ [CL] %b^ $(COMPILER) $(CL_FLAGS) -o %o %f |>
+
+# run test program
+!RUN_TEST = |> ^ [TEST] %b^ %f |>
+
+# passthrough input; useful for mapping tup groups
+!PASSTHROUGH = |> |>
