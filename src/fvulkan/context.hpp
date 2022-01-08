@@ -31,25 +31,25 @@ namespace fgl::vulkan
 		const uint32_t queue_family_index;
 		const vk::raii::Device device;
 
-        uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
+		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
-        vk::raii::Instance create_instance( const AppInfo& info ) const;
+		vk::raii::Instance create_instance( const AppInfo& info ) const;
 
-        vk::raii::Device create_device( uint32_t queue_count, float queue_priority ) const;
+		vk::raii::Device create_device( uint32_t queue_count, float queue_priority ) const;
 
 		[[nodiscard]] explicit
-        Context( const AppInfo& info, const bool debug_printing = false )
-            :
-            instance( create_instance( info ) ),
-            physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
-            queue_family_index( index_of_first_queue_family( vk::QueueFlagBits::eCompute ) ),
-            device( create_device( info.queue_count, info.queue_priority ) )
-        {
-            const uint32_t loaded_version { context.enumerateInstanceVersion() };
-            const uint32_t loader_major { VK_VERSION_MAJOR( loaded_version ) };
-            const uint32_t loader_minor { VK_VERSION_MINOR( loaded_version ) };
-            const uint32_t target_major { VK_VERSION_MAJOR( info.apiVersion ) };
-            const uint32_t target_minor { VK_VERSION_MINOR( info.apiVersion ) };
+			Context( const AppInfo& info, const bool debug_printing = false )
+			:
+			instance( create_instance( info ) ),
+			physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
+			queue_family_index( index_of_first_queue_family( vk::QueueFlagBits::eCompute ) ),
+			device( create_device( info.queue_count, info.queue_priority ) )
+		{
+			const uint32_t loaded_version { context.enumerateInstanceVersion() };
+			const uint32_t loader_major { VK_VERSION_MAJOR( loaded_version ) };
+			const uint32_t loader_minor { VK_VERSION_MINOR( loaded_version ) };
+			const uint32_t target_major { VK_VERSION_MAJOR( info.apiVersion ) };
+			const uint32_t target_minor { VK_VERSION_MINOR( info.apiVersion ) };
 
 			if( loader_major < target_major
 				|| ( loader_major == target_major && loader_minor < target_minor ) )
@@ -62,24 +62,24 @@ namespace fgl::vulkan
 				throw std::runtime_error( ss.str() );
 			}
 
-            if( debug_printing )
-            {
-                const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
-                const uint32_t target_patch { VK_VERSION_PATCH( info.apiVersion ) };
-                const auto& properties { physical_device.getProperties() };
-                std::cout
-                    << "\n\tDevice Name: " << properties.deviceName
-                    << "\n\tMinimum required Vulkan API v"
-                    << target_major << '.' << target_minor << '.' << target_patch
-                    << "\n\tDetected running Vulkan API v"
-                    << loader_major << '.' << loader_minor << '.' << loader_patch
-                    << "\n\tHas support for  Vulkan API v"
-                    << VK_VERSION_MAJOR( properties.apiVersion ) << '.'
-                    << VK_VERSION_MINOR( properties.apiVersion ) << '.'
-                    << VK_VERSION_PATCH( properties.apiVersion )
-                    << "\n\tMax Compute Shared Memory Size: "
-                    << properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
-                    << "\n\tCompute Queue Family Index: "
+			if( debug_printing )
+			{
+				const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
+				const uint32_t target_patch { VK_VERSION_PATCH( info.apiVersion ) };
+				const auto& properties { physical_device.getProperties() };
+				std::cout
+					<< "\n\tDevice Name: " << properties.deviceName
+					<< "\n\tMinimum required Vulkan API v"
+					<< target_major << '.' << target_minor << '.' << target_patch
+					<< "\n\tDetected running Vulkan API v"
+					<< loader_major << '.' << loader_minor << '.' << loader_patch
+					<< "\n\tHas support for  Vulkan API v"
+					<< VK_VERSION_MAJOR( properties.apiVersion ) << '.'
+					<< VK_VERSION_MINOR( properties.apiVersion ) << '.'
+					<< VK_VERSION_PATCH( properties.apiVersion )
+					<< "\n\tMax Compute Shared Memory Size: "
+					<< properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
+					<< "\n\tCompute Queue Family Index: "
 					<< queue_family_index
 					<< std::endl;
 
@@ -96,7 +96,7 @@ namespace fgl::vulkan
 					physical_device.enumerateDeviceExtensionProperties()
 				};
 
-				const std::string amd_properties_name{ "VK_AMD_shader_core_properties2" };
+				const std::string amd_properties_name { "VK_AMD_shader_core_properties2" };
 				const bool has_amd_proprties {
 					std::find_if(
 						extensionProperties.begin(),
@@ -128,6 +128,38 @@ namespace fgl::vulkan
 						<< "\n\tCompute Units Per Shader Array: " << shaderCoreProperties.computeUnitsPerShaderArray
 						<< "\n\tSIMD Per Compute Unit: " << shaderCoreProperties.simdPerComputeUnit
 						<< "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd;
+				}
+
+
+				const std::string nv_properties_name { "VK_NV_shader_sm_builtins" };
+				const bool has_nv_proprties {
+					std::find_if(
+						extensionProperties.begin(),
+						extensionProperties.end(),
+						[&nv_properties_name]( vk::ExtensionProperties const& ep )
+						{
+							return nv_properties_name == ep.extensionName;
+						}
+					)
+					!= extensionProperties.end()
+				};
+
+				if( has_nv_proprties )
+				{
+					const auto properties2 {
+						physical_device.getProperties2<
+							vk::PhysicalDeviceProperties2,
+							vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV
+						>()
+					};
+
+					const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& shaderCoreProperties {
+						properties2.get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>()
+					};
+
+					std::cout
+						<< "\n\tShader SM Count" << shaderCoreProperties.shaderSMCount
+						<< "\n\tShader Warps Per SM" << shaderCoreProperties.shaderWarpsPerSM;
 				}
 
 				std::cout << "\n\n\tMax Compute Work Group Sizes: ";
