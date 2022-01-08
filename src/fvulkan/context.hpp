@@ -70,7 +70,7 @@ namespace fgl::vulkan
                 const uint32_t loaded_version { context.enumerateInstanceVersion() };
                 const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
                 const uint32_t target_patch { VK_VERSION_PATCH( info.apiVersion ) };
-                const auto& properties { physical_device.getProperties() };
+                const vk::PhysicalDeviceProperties& properties { physical_device.getProperties() };
                 std::cout
                     << "\n\tDevice Name: " << properties.deviceName
                     << "\n\tMinimum required Vulkan API v"
@@ -84,8 +84,26 @@ namespace fgl::vulkan
                     << "\n\tMax Compute Shared Memory Size: "
                     << properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
                     << "\n\tCompute Queue Family Index: "
-                    << queue_family_index
-                    << "\n\tMax Compute Work Group Sizes: ";
+                    << queue_family_index << std::endl;
+                //Specific to AMD
+                auto properties2 {
+                    physical_device.getProperties2<
+                        vk::PhysicalDeviceProperties2,
+                        vk::PhysicalDeviceShaderCorePropertiesAMD
+                    >()
+                };
+
+                vk::PhysicalDeviceShaderCorePropertiesAMD const& shaderCoreProperties {
+                    properties2.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()
+                };
+
+                std::cout
+                    << "\n\tShader Engine Count: " << shaderCoreProperties.shaderEngineCount
+                    << "\n\tShader Arrays Per Engine Count: " << shaderCoreProperties.shaderArraysPerEngineCount
+                    << "\n\tCompute Units Per Shader Array: " << shaderCoreProperties.computeUnitsPerShaderArray
+                    << "\n\tSIMD Per Compute Unit: " << shaderCoreProperties.simdPerComputeUnit
+                    << "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd << "\n";
+                std::cout << "\n\tMax Compute Work Group Sizes: ";
 
                 for( uint32_t index { 0 };
                     const auto n : properties.limits.maxComputeWorkGroupSize )
@@ -104,11 +122,10 @@ namespace fgl::vulkan
 
                 std::cout << "\n" << std::endl;
             }
+
         }
 
     };
-
-
 
 }
 
