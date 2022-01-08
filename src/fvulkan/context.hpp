@@ -62,7 +62,6 @@ namespace fgl::vulkan
 				throw std::runtime_error( ss.str() );
 			}
 
-
             if( debug_printing )
             {
                 const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
@@ -81,37 +80,45 @@ namespace fgl::vulkan
                     << "\n\tMax Compute Shared Memory Size: "
                     << properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
                     << "\n\tCompute Queue Family Index: "
-
-
-
-					<< queue_family_index << std::endl;
+					<< queue_family_index
+					<< std::endl;
 
 				//Checking if we are an AMD gpu
 				//FUCK NVIDIA WHY DONT YOU HAVE THIS!?!?!??!!?
+				/* what about...
+					vk::PhysicalDeviceCooperativeMatrixPropertiesNV
+					vk::PhysicalDeviceMeshShaderPropertiesNV
+					vk::PhysicalDeviceRayTracingPropertiesNV
+					vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV
+					vk::PhysicalDeviceShadingRateImagePropertiesNV
+				*/
 				std::vector<vk::ExtensionProperties> extensionProperties {
-					physical_device.enumerateDeviceExtensionProperties()};
+					physical_device.enumerateDeviceExtensionProperties()
+				};
 
-				std::string name {"VK_AMD_shader_core_properties2"};
-				auto propertyIterator = std::find_if(
-					extensionProperties.begin(),
-					extensionProperties.end(),
-					[&name]( vk::ExtensionProperties const& ep )
-					{
-						return name == ep.extensionName;
-					}
-				);
+				const std::string amd_properties_name{ "VK_AMD_shader_core_properties2" };
+				const bool has_amd_proprties {
+					std::find_if(
+						extensionProperties.begin(),
+						extensionProperties.end(),
+						[&amd_properties_name]( vk::ExtensionProperties const& ep )
+						{
+							return amd_properties_name == ep.extensionName;
+						}
+					)
+					!= extensionProperties.end()
+				};
 
-				if( propertyIterator != extensionProperties.end() ) //VK_AMD_shader_core_properties2
+				if( has_amd_proprties )
 				{
-					//Specific to AMD
-					auto properties2 {
+					const auto properties2 {
 						physical_device.getProperties2<
 							vk::PhysicalDeviceProperties2,
 							vk::PhysicalDeviceShaderCorePropertiesAMD
 						>()
 					};
 
-					vk::PhysicalDeviceShaderCorePropertiesAMD const& shaderCoreProperties {
+					const vk::PhysicalDeviceShaderCorePropertiesAMD& shaderCoreProperties {
 						properties2.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()
 					};
 
@@ -120,10 +127,10 @@ namespace fgl::vulkan
 						<< "\n\tShader Arrays Per Engine Count: " << shaderCoreProperties.shaderArraysPerEngineCount
 						<< "\n\tCompute Units Per Shader Array: " << shaderCoreProperties.computeUnitsPerShaderArray
 						<< "\n\tSIMD Per Compute Unit: " << shaderCoreProperties.simdPerComputeUnit
-						<< "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd << "\n";
+						<< "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd;
 				}
 
-				std::cout << "\n\tMax Compute Work Group Sizes: ";
+				std::cout << "\n\n\tMax Compute Work Group Sizes: ";
 
 				for( uint32_t index { 0 };
 					const auto n : properties.limits.maxComputeWorkGroupSize )
@@ -138,9 +145,10 @@ namespace fgl::vulkan
 					std::cout << " [" << index++ << "]=" << n;
 				}
 
-				std::cout << "\n\tMax Compute Inovactions: " << properties.limits.maxComputeWorkGroupInvocations << std::endl;
-
-				std::cout << "\n" << std::endl;
+				std::cout
+					<< "\n\tMax Compute Inovactions: "
+					<< properties.limits.maxComputeWorkGroupInvocations
+					<< "\n\n" << std::endl;
 			}
 
 		}
