@@ -158,8 +158,8 @@ namespace fgl::vulkan
 					};
 
 					std::cout
-						<< "\n\tShader SM Count" << shaderCoreProperties.shaderSMCount
-						<< "\n\tShader Warps Per SM" << shaderCoreProperties.shaderWarpsPerSM;
+						<< "\n\tShader SM Count " << shaderCoreProperties.shaderSMCount
+						<< "\n\tShader Warps Per SM " << shaderCoreProperties.shaderWarpsPerSM;
 				}
 
 				std::cout << "\n\n\tMax Compute Work Group Sizes: ";
