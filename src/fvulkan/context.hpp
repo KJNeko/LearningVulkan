@@ -31,16 +31,14 @@ namespace fgl::vulkan
         const uint32_t queue_family_index;
         const vk::raii::Device device;
 
-
-        void verify_version_requirements();
-
         uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
-        vk::raii::Instance create_instance( const AppInfo& info );
+        vk::raii::Instance create_instance( const AppInfo& info ) const;
 
-        vk::raii::Device create_device( uint32_t queue_count, float queue_priority );
+        vk::raii::Device create_device( uint32_t queue_count, float queue_priority ) const;
 
-        Context( const AppInfo& info, bool debug_printing = false )
+		[[nodiscard]] explicit
+        Context( const AppInfo& info, const bool debug_printing = false )
             :
             instance( create_instance( info ) ),
             physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
@@ -65,9 +63,8 @@ namespace fgl::vulkan
             }
 
 
-            if( debug_printing ) [[unlikely]]
+            if( debug_printing )
             {
-                const uint32_t loaded_version { context.enumerateInstanceVersion() };
                 const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
                 const uint32_t target_patch { VK_VERSION_PATCH( info.apiVersion ) };
                 const auto& properties { physical_device.getProperties() };
@@ -100,9 +97,10 @@ namespace fgl::vulkan
                     std::cout << " [" << index++ << "]=" << n;
                 }
 
-                std::cout << "\n\tMax Compute Inovactions: " << properties.limits.maxComputeWorkGroupInvocations << std::endl;
-
-                std::cout << "\n" << std::endl;
+                std::cout
+					<< "\n\tMax Compute Inovactions: "
+					<< properties.limits.maxComputeWorkGroupInvocations
+					<< "\n" << std::endl;
             }
         }
 

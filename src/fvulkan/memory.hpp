@@ -17,10 +17,10 @@ namespace fgl::vulkan
     {
     public:
         uint32_t binding;
+		vk::DescriptorType buffer_type;
         vk::DeviceSize bytesize;
         vk::raii::Buffer buffer;
         vk::raii::DeviceMemory memory;
-        vk::DescriptorType buffer_type;
 
         Buffer() = delete;
 
@@ -34,10 +34,10 @@ namespace fgl::vulkan
             const vk::DescriptorType type )
             :
             binding( _binding ),
+			buffer_type( type ),
             bytesize( size ),
             buffer( create_buffer( context, size, usageflags, sharingmode ) ),
-            memory( create_device_memory( context, flags ) ),
-            buffer_type( type )
+            memory( create_device_memory( context, flags ) )
         {
             buffer.bindMemory( *memory, 0 );
             std::cout << "Memory created successfully with binding:" << _binding << std::endl;
@@ -45,30 +45,22 @@ namespace fgl::vulkan
 
         std::pair<uint32_t, vk::DeviceSize> get_memory_type(
             const vk::PhysicalDeviceMemoryProperties& device_memory_properties,
-            const vk::MemoryPropertyFlags flags );
+            const vk::MemoryPropertyFlags flags
+		) const;
 
         vk::raii::Buffer create_buffer(
             const Context& context,
             const vk::DeviceSize size,
             const vk::BufferUsageFlagBits usageflags,
-            const vk::SharingMode sharingmode );
+            const vk::SharingMode sharingmode
+		) const;
 
         vk::raii::DeviceMemory create_device_memory(
             const Context& context,
-            const vk::MemoryPropertyFlags flags )
-        {
-            const auto [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
+            const vk::MemoryPropertyFlags flags
+		) const;
 
-            const vk::MemoryAllocateInfo memInfo( bytesize, memindex );
-
-            return context.device.allocateMemory( memInfo );
-        }
-
-        void* get_memory()
-        {
-            return memory.mapMemory( 0, bytesize );
-        }
-
+        void* get_memory() const;
     };
 
 }

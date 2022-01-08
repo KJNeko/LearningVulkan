@@ -19,14 +19,6 @@
 #include "fvulkan/memory.hpp"
 #include "fvulkan/pipeline.hpp"
 
-constexpr bool debug_printing {
-#ifndef NDEBUG
-	true
-#else
-	false
-#endif// NDEBUG
-};
-
 // could use StructureChain, but it would be more verbose?
 // https://github.com/KhronosGroup/Vulkan-Hpp/search?q=StructureChain
 
@@ -129,7 +121,7 @@ int main() try
 	buffers.emplace_back( inst, outsize, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, flags, vk::DescriptorType::eStorageBuffer );
 
 
-	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "/home/kj16609/Desktop/Projects/testing/Square.spv" ), std::string( "main" ), buffers );
+	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "Square.spv" ), std::string( "main" ), buffers );
 
 	{
 		void* test = buffers.at( 0 ).get_memory();
@@ -184,7 +176,7 @@ int main() try
 	constexpr uint64_t timeout { 10 };
 	while( vk::Result::eTimeout == inst.device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
-	constexpr vk::DeviceSize out_map_offset { 0 };
+	//constexpr vk::DeviceSize out_map_offset { 0 };
 	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
 
 	/// PRINT

@@ -4,7 +4,6 @@
 
 namespace fgl::vulkan
 {
-
     //VULKAN
     uint32_t Context::index_of_first_queue_family( const vk::QueueFlagBits flag ) const
     {
@@ -16,7 +15,9 @@ namespace fgl::vulkan
         };
 
         const auto end = physical_device.getQueueFamilyProperties().cend();
-        const std::vector<vk::QueueFamilyProperties>& props = physical_device.getQueueFamilyProperties();
+        const std::vector<vk::QueueFamilyProperties>& props{
+			physical_device.getQueueFamilyProperties()
+		};
 
         if( const auto it { std::ranges::find_if( props, has_flag ) };
             it != end )
@@ -28,9 +29,11 @@ namespace fgl::vulkan
         );
     }
 
-    vk::raii::Instance Context::create_instance( const AppInfo& info )
+    vk::raii::Instance Context::create_instance( const AppInfo& info ) const
     {
-        const vk::ApplicationInfo appInfo( "VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion );
+        const vk::ApplicationInfo appInfo(
+			"VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion
+		);
         vk::InstanceCreateInfo ci(
             vk::InstanceCreateFlags {}, &appInfo,
             static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
@@ -39,7 +42,9 @@ namespace fgl::vulkan
         return vk::raii::Instance( context, ci );
     }
 
-    vk::raii::Device Context::create_device( uint32_t queue_count, float queue_priority )
+    vk::raii::Device Context::create_device(
+		const uint32_t queue_count,
+		const float queue_priority ) const
     {
         const vk::DeviceQueueCreateInfo device_queue_ci(
             {}, queue_family_index, queue_count, &queue_priority

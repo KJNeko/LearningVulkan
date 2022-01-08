@@ -20,20 +20,20 @@ namespace fgl::vulkan
 
 		vk::raii::ShaderModule shader_module;
 		vk::raii::DescriptorSetLayout descriptor_set_layouts;
-
-		//std::vector<vk::DescriptorSetLayoutBinding> setBindings;
-
 		vk::raii::DescriptorPool pool;
-
 		vk::raii::PipelineLayout layout;
 		vk::raii::Pipeline pipeline;
-
 		vk::raii::DescriptorSets sets;
 
 		Pipeline() = delete;
 
+		/// TODO constrain template to range of buffers
 		template <typename T>
-		Pipeline( const Context& cntx, const std::filesystem::path& shaderpath, const std::string& shader_init_name, const T& buffers )
+		Pipeline(
+			const Context& cntx,
+			const std::filesystem::path& shaderpath,
+			const std::string& shader_init_name,
+			const T& buffers )
 			:
 			shader_module( create_shader_module( cntx, shaderpath ) ),
 			descriptor_set_layouts( create_descriptor_set_layout( cntx, buffers ) ),
@@ -59,41 +59,63 @@ namespace fgl::vulkan
 			std::cout << "Pipeline made successfuly with " << buffers.size() << " buffers." << std::endl;
 		}
 
-		vk::raii::ShaderModule create_shader_module( const Context& cntx, const std::filesystem::path path );
+		vk::raii::ShaderModule create_shader_module(
+			const Context& cntx,
+			const std::filesystem::path path
+		) const;
 
+		/// TODO constrain template to range of buffers
 		template <typename T>
-		vk::raii::DescriptorSetLayout create_descriptor_set_layout( const Context& cntx, const T& buffers )
+		vk::raii::DescriptorSetLayout create_descriptor_set_layout(
+			const Context& cntx,
+			const T& buffers )
 		{
-			//setBindings.resize( buffers.size() + 1 );
 			std::vector<vk::DescriptorSetLayoutBinding> setBindings;
 			for( const auto& buffer : buffers )
 			{
-				vk::DescriptorSetLayoutBinding binding( buffer.binding, buffer.buffer_type, 1, vk::ShaderStageFlagBits::eCompute );
-				setBindings.push_back( binding );
+				constexpr uint32_t descriptor_count{ 1 };
+				setBindings.emplace_back(
+					buffer.binding,
+					buffer.buffer_type,
+					descriptor_count,
+					vk::ShaderStageFlagBits::eCompute
+				);
 			}
-
-			vk::DescriptorSetLayoutCreateInfo ci( {}, setBindings.size(), setBindings.data() );
+			const vk::DescriptorSetLayoutCreateInfo ci(
+				{},
+				static_cast<uint32_t>(setBindings.size()),
+				setBindings.data()
+			);
 			return vk::raii::DescriptorSetLayout( cntx.device, ci );
 		}
-		template <typename T>
-		vk::raii::DescriptorPool create_descriptor_pool( const Context& cntx, const T& buffers )
-		{
-			auto count = static_cast< uint32_t >( buffers.size() );
-			auto& buffer = buffers.front();
-			vk::DescriptorPoolSize poolsize { buffer.buffer_type, count };
 
-			vk::DescriptorPoolCreateInfo ci( vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1, 1, &poolsize );
+		/// TODO constrain template to range of buffers
+		template <typename T>
+		vk::raii::DescriptorPool create_descriptor_pool(
+			const Context& cntx,
+			const T& buffers ) const
+		{
+			const auto count = static_cast< uint32_t >( buffers.size() );
+			const vk::DescriptorPoolSize poolsize { buffers.front().buffer_type, count };
+			constexpr uint32_t max_sets{ 1 };
+			constexpr uint32_t pool_size_count{ 1 };
+			const vk::DescriptorPoolCreateInfo ci(
+				vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+				max_sets,
+				pool_size_count,
+				&poolsize
+			);
 			return vk::raii::DescriptorPool( cntx.device, ci );
 		}
 
-		vk::raii::PipelineLayout create_pipeline_layout( const Context& cntx );
+		vk::raii::PipelineLayout create_pipeline_layout( const Context& cntx ) const;
 
-		vk::raii::Pipeline create_pipeline( const Context& cntx, const std::string init_function_name );
+		vk::raii::Pipeline create_pipeline(
+			const Context& cntx,
+			const std::string init_function_name
+		) const;
 
-		vk::raii::DescriptorSets create_descriptor_sets( const Context& cntx );
-
-
-
+		vk::raii::DescriptorSets create_descriptor_sets( const Context& cntx ) const;
 	};
 
 
