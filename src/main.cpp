@@ -177,9 +177,10 @@ int main() try
 
 	fgl::vulkan::Context inst( info );
 
+	debug_print( inst.context, inst.physical_device, inst.queue_family_index );
 
-	constexpr size_t elements = 4;
-	vk::DeviceSize insize = elements * sizeof( uint32_t );
+	constexpr size_t elements = 512;
+	vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 
 
@@ -212,7 +213,7 @@ int main() try
 	constexpr vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 
 	std::vector<fgl::vulkan::Buffer> buffers;
-	buffers.reserve( 3 );
+	buffers.reserve( 2 );
 
 	//binding : set
 
