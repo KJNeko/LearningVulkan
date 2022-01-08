@@ -179,7 +179,7 @@ int main() try
 
 	debug_print( inst.context, inst.physical_device, inst.queue_family_index );
 
-	constexpr size_t elements = 512;
+	constexpr size_t elements = 8;
 	vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 
@@ -269,7 +269,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( elements / 8 + 1, elements / 8 + 1, 1 );
+	command_buffer.dispatch( 2, 2, 1 );
 	command_buffer.end();
 
 
@@ -289,7 +289,7 @@ int main() try
 			auto index = y * elements + x;
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
-		std::cout << std::endl;
+		std::cout << "\n\n" << std::endl;
 	}
 
 	//
