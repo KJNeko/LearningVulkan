@@ -269,7 +269,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( elements, 1, 1 );
+	command_buffer.dispatch( elements, elements, 1 );
 	command_buffer.end();
 
 
@@ -279,48 +279,18 @@ int main() try
 
 	constexpr vk::DeviceSize out_map_offset { 0 };
 	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
+
 	/// PRINT
 	std::cout << "Output Buffer:" << std::endl;
-	for( size_t i = 0; i < elements * elements; ++i ) // spammy...
+	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
-		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
-		if( ( i + 1 ) % elements == 0 )
-		{
-			std::cout << std::endl;
-		}
-	}
-
-	out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 2 ).get_memory() );
-	std::cout << "Output Buffer:" << std::endl;
-	for( size_t i = 0; i < elements * elements; ++i ) // spammy...
+		for( size_t x = 0; x < elements; ++x )
 	{
-		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
-		if( ( i + 1 ) % elements == 0 )
-		{
-			std::cout << std::endl;
-		}
-	}
-
-	{
-		void* test = buffers.at( 0 ).get_memory();
-
-		// TODO range wrapper
-		uint32_t* const in_buffer_data {
-			reinterpret_cast< uint32_t* > ( test )
-		};
-
-		std::cout << "Input Buffer:" << std::endl;
-		for( size_t i = 0; i < elements; ++i )
-		{
-			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
+			auto index = y * elements + x;
+			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << std::endl;
-		/// PRINT
-
-		constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
-		buffers.at( 0 ).memory.unmapMemory();
 	}
-
 
 	//
 	/// PRINT
