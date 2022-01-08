@@ -71,8 +71,6 @@ auto create_waitable_fence(
 
 #include <unordered_map>
 
-#include "range_wrapper.hpp"
-
 int main() try
 {
 
@@ -89,7 +87,7 @@ int main() try
 
 	fgl::vulkan::Context inst( info, true );
 
-	constexpr size_t elements = 512;
+	constexpr size_t elements = 32;
 	vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 
@@ -190,7 +188,7 @@ int main() try
 	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
 
 	/// PRINT
-	/*std::cout << "Output Buffer:" << std::endl;
+	std::cout << "Output Buffer:" << std::endl;
 	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
@@ -199,7 +197,7 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}*/
+	}
 
 	//
 	/// PRINT
