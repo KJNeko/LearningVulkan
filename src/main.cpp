@@ -232,11 +232,11 @@ int main() try
 		};
 
 
-		in_buffer_data[0] = elements - 1;
+		in_buffer_data[0] = elements;
 
-		for( size_t i = 1; i < elements; ++i )
+		for( size_t i = 1; i < elements + 1; ++i )
 		{
-			in_buffer_data[i] = static_cast< uint32_t >( i );
+			in_buffer_data[i] = static_cast< uint32_t >( i - 1 );
 		}
 
 		std::cout << "Input Buffer:" << std::endl;
@@ -285,7 +285,7 @@ int main() try
 	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
-	{
+		{
 			auto index = y * elements + x;
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
