@@ -14,12 +14,19 @@ namespace fgl::vulkan
 		const Context& cntx,
 		const std::filesystem::path path ) const
 	{
+		/// TODO replace with fgl read binary file
 		auto buff = fgl::misc::read_file( path );
+
+		/// TODO guarentee alignment
+		// assert vector memory meets allignment requirements of uint32_t
+		assert(reinterpret_cast<uintptr_t>(buff.data()) % sizeof(uint32_t) == 0);
 
 		const vk::ShaderModuleCreateInfo ci(
 			vk::ShaderModuleCreateFlags(),
 			buff.size(),
-			reinterpret_cast< const uint32_t* >( buff.data() )
+			reinterpret_cast< const uint32_t* >( // TODO ASSURE ALIGNMENT
+				reinterpret_cast<const void*>(buff.data())
+			)
 		);
 		return vk::raii::ShaderModule( cntx.device, ci );
 	}
