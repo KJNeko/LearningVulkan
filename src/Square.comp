@@ -1,8 +1,8 @@
 #version 450 core
 
-layout(local_size_x = 4, local_size_y = 4) in;
+layout(local_size_x = 8, local_size_y = 8) in;
 
-layout(set = 0, std430, binding = 0) readonly buffer InputBuffer{
+layout(std430, binding = 0) readonly buffer InputBuffer{
     int matrixsize;
     uint inData_SSBO[];
 } inputDat;
@@ -18,12 +18,13 @@ void main(void)
     uint index = gl_GlobalInvocationID.x;
     uint indexy = gl_GlobalInvocationID.y;
 
-    uint outindex = indexy * inputDat.matrixsize + index;
+    uint outindex = (indexy * inputDat.matrixsize) + index;
 
     if(outindex > inputDat.matrixsize * inputDat.matrixsize)
     {
         return;
+        //Return early to prevent the shader from accessing invalid/unallocated memory
     }
 
-    outputData.outData[indexy * inputDat.matrixsize + index] = uint(sqrt(inputDat.inData_SSBO[indexy] * inputDat.inData_SSBO[index]));
+    outputData.outData[outindex] = inputDat.inData_SSBO[indexy] * inputDat.inData_SSBO[index];
 }

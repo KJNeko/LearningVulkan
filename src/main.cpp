@@ -269,7 +269,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( elements, elements, 1 );
+	command_buffer.dispatch( elements / 8 + 1, elements / 8 + 1, 1 );
 	command_buffer.end();
 
 
