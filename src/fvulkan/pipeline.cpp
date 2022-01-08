@@ -17,28 +17,14 @@ namespace fgl::vulkan
 			buff.size(),
 			reinterpret_cast< const uint32_t* >( buff.data() )
 		);
-
 		return vk::raii::ShaderModule( cntx.device, ci );
 	}
 
-	vk::raii::DescriptorPool Pipeline::create_descriptor_pool( const Context& cntx )
-	{
-		vk::DescriptorPoolCreateInfo ci( vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast< uint32_t >( poolsizes.size() ), poolsizes );
 
-		return vk::raii::DescriptorPool( cntx.device, ci );
-	}
 
 	vk::raii::PipelineLayout Pipeline::create_pipeline_layout( const Context& cntx )
 	{
-
-		std::vector<vk::DescriptorSetLayout> array;
-
-		for( const auto& tlayout : descriptor_set_layout )
-		{
-			array.push_back( *tlayout );
-		}
-
-		const vk::PipelineLayoutCreateInfo ci( vk::PipelineLayoutCreateFlags(), array );
+		const vk::PipelineLayoutCreateInfo ci( vk::PipelineLayoutCreateFlags(), *descriptor_set_layouts );
 
 		//const vk::PipelineLayoutCreateInfo ci( {}, *descriptor_set_layout );
 		return vk::raii::PipelineLayout( cntx.device, ci );
@@ -58,11 +44,17 @@ namespace fgl::vulkan
 			shader_stage_info,
 			*layout
 		);
-
 		return cntx.device.createComputePipeline(
 			cntx.device.createPipelineCache( vk::PipelineCacheCreateInfo() ),
 			ci
 		);
+
+	}
+
+	vk::raii::DescriptorSets Pipeline::create_descriptor_sets( const Context& cntx )
+	{
+		vk::DescriptorSetAllocateInfo alloc_info( *pool, *descriptor_set_layouts );
+		return vk::raii::DescriptorSets( cntx.device, alloc_info );
 	}
 
 

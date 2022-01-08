@@ -8,6 +8,8 @@
 
 #include "context.hpp"
 
+#include <iostream>
+
 namespace fgl::vulkan
 {
 
@@ -15,7 +17,6 @@ namespace fgl::vulkan
     {
     public:
         uint32_t binding;
-        uint32_t set;
         vk::DeviceSize bytesize;
         vk::raii::Buffer buffer;
         vk::raii::DeviceMemory memory;
@@ -29,18 +30,17 @@ namespace fgl::vulkan
             const vk::BufferUsageFlagBits usageflags,
             const vk::SharingMode sharingmode,
             const uint32_t _binding,
-            const uint32_t _set,
             const vk::MemoryPropertyFlags flags,
             const vk::DescriptorType type )
             :
             binding( _binding ),
-            set( _set ),
             bytesize( size ),
             buffer( create_buffer( context, size, usageflags, sharingmode ) ),
             memory( create_device_memory( context, flags ) ),
             buffer_type( type )
         {
             buffer.bindMemory( *memory, 0 );
+            std::cout << "Memory created successfully with binding:" << _binding << std::endl;
         }
 
         std::pair<uint32_t, vk::DeviceSize> get_memory_type(

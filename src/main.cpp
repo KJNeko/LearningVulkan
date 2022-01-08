@@ -488,7 +488,11 @@ int main() try
 
 	fgl::vulkan::Context inst( info );
 
-	vk::DeviceSize size = 512;
+
+	constexpr size_t elements = 4;
+	vk::DeviceSize insize = elements * sizeof( uint32_t );
+	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
+
 
 	//Allocate a single memory segment for the buffers being passed in
 	/*
@@ -517,237 +521,127 @@ int main() try
 
 
 	constexpr vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-	constexpr vk::MemoryPropertyFlags dflags = vk::MemoryPropertyFlagBits::eDeviceLocal;
 
 	std::vector<fgl::vulkan::Buffer> buffers;
+	buffers.reserve( 3 );
 
 	//binding : set
 
-	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0, 0, flags, vk::DescriptorType::eStorageBuffer );
-	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, 0, flags, vk::DescriptorType::eStorageBuffer );
-	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0, 1, dflags, vk::DescriptorType::eStorageBuffer );
-	buffers.emplace_back( inst, size, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, 2, dflags, vk::DescriptorType::eStorageBuffer );
+	buffers.emplace_back( inst, insize, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 0, flags, vk::DescriptorType::eStorageBuffer );
+	buffers.emplace_back( inst, outsize, vk::BufferUsageFlagBits::eStorageBuffer, vk::SharingMode::eExclusive, 1, flags, vk::DescriptorType::eStorageBuffer );
+
 
 	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "/home/kj16609/Desktop/Projects/testing/Square.spv" ), std::string( "main" ), buffers );
 
-	fgl::vulkan::Pipeline fipeline( inst, std::filesystem::path( "/home/kj16609/Desktop/Projects/testing/Square.spv" ), std::string( "main" ), buffers );
-
-
-	void* test = buffers.at( 1 ).get_memory();
-
-	return 0;
-
-	/*
-
-		SHA256
-
-
-		Constants
-		K = Cube root of first 64 prime numbers
-
-		PADDING
-		Put 1 after message
-		Add zeros until 512 - 64 bits
-		last 64 bits are the length of the message (Before padding)
-
-
-
-		https://www.youtube.com/watch?v=nduoUEHrK_4
-
-	*/
-
-	/*const std::array msg = { 'a','b','c', 'd','e','f','g' };
-
-	constexpr int padsize = ( 512 - ( msg.size() % 512 ) ) - 64;
-
-	std::vector<char> msgpad;
-	msgpad.resize( msg.size() + padsize + 64 );
-
-	memcpy( msgpad.data(), msg.data(), msg.size() );
-
-	//constants
-	char one = static_cast< char >( 0b10000000 );
-
-	memcpy( msgpad.data() + msg.size(), &one, sizeof( char ) );
-
-	for( size_t i = 0; i < msgpad.size(); ++i )
 	{
-		if( i % ( 64 / 8 ) == 0 )
+		void* test = buffers.at( 0 ).get_memory();
+
+		// TODO range wrapper
+		uint32_t* const in_buffer_data {
+				reinterpret_cast< uint32_t* > ( test )
+		};
+
+
+		in_buffer_data[0] = elements - 1;
+
+		for( size_t i = 1; i < elements; ++i )
 		{
-			std::cout << std::endl;
+			in_buffer_data[i] = static_cast< uint32_t >( i );
 		}
-		std::cout << std::bitset<8>( msgpad.at( i ) );
+
+		std::cout << "Input Buffer:" << std::endl;
+		for( size_t i = 0; i < elements; ++i )
+		{
+			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
+		}
+		std::cout << std::endl;
+		/// PRINT
+
+		constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
+		buffers.at( 0 ).memory.unmapMemory();
 	}
 
-	std::cout << std::endl;
 
-	std::cout << "padsize:" << padsize << std::endl;
+	const auto command_pool { create_command_pool( inst.device, inst.queue_family_index ) };
 
-*/
-//Padd
+	const auto command_buffer { create_command_buffer( inst.device, command_pool ) };
 
+	const vk::CommandBufferBeginInfo bi { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+	command_buffer.begin( bi );
+	command_buffer.bindPipeline( vk::PipelineBindPoint::eCompute, *vpipeline.pipeline );
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
+	std::vector<vk::DescriptorSet> array;
 
 
-
-	return 1;
-
-	const vk::raii::Context context;
-	verify_version_requirements( context );
-	const vk::raii::Instance instance { create_instance( context ) };
-	const vk::raii::PhysicalDevice physical_device { std::move( vk::raii::PhysicalDevices( instance ).front() ) };
-
-	const uint32_t queue_family_index {
-		index_of_first_queue_family(
-			vk::QueueFlagBits::eCompute,
-			physical_device.getQueueFamilyProperties() )
-	};
-
-	debug_print( context, physical_device, queue_family_index );
-
-	const auto device { create_device( physical_device, queue_family_index ) };
-
-	constexpr uint32_t num_of_members { 8 };
-	constexpr uint32_t blocksize { num_of_members * sizeof( uint32_t ) };
-	constexpr uint32_t in_size { blocksize + sizeof( uint32_t ) * 2 };
-	constexpr uint32_t out_size { blocksize * blocksize };
-
-
-	const auto input_buffer { create_buffer( device, in_size, queue_family_index ) };
-	const auto output_buffer { create_buffer( device, out_size, queue_family_index ) };
-
-	//Memory
-	constexpr auto memory_flags { vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent };
-
-
-	const auto input_memory { create_device_memory( device, physical_device, input_buffer, memory_flags ) };
-	const auto output_memory { create_device_memory( device, physical_device, output_buffer, memory_flags ) };
-
-	// TODO range wrapper
-	uint32_t* const in_buffer_data {
-		static_cast< uint32_t* > ( input_memory.mapMemory( 0, in_size ) )
-	};
-
-
-	for( size_t i = 0; i < in_size; ++i )
+	for( const auto& tlayout : vpipeline.sets )
 	{
-		in_buffer_data[i] = static_cast< uint32_t >( i );
+		array.push_back( *tlayout );
 	}
 
-	std::cout << "Input Buffer:" << std::endl;
-	for( size_t i = 0; i < 3; ++i )
-	{
-		std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
-	}
-	std::cout << std::endl;
-	/// PRINT
-
-	constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
-	input_memory.unmapMemory();
-
-	input_buffer.bindMemory( *input_memory, io_buffer_bind_offset );
-	output_buffer.bindMemory( *output_memory, io_buffer_bind_offset );
-
-	//Loading shader
-	const vk::raii::ShaderModule module1 {
-		create_shader_module_from_file( device, "./Square.spv" )
-	};
-
-	//Discriptors
-	constexpr uint32_t descriptor_count { 1 };
-	const std::vector<vk::DescriptorSetLayoutBinding> descriptorSetBindings {
-		vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute ),
-		vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eStorageBuffer, descriptor_count, vk::ShaderStageFlagBits::eCompute )
-	};
-
-	const vk::raii::DescriptorSetLayout descriptor_set_layout {
-		create_descriptor_set_layout( device, descriptorSetBindings )
-	};
-
-	//Pipeline
-	const vk::raii::PipelineLayout pipeline_layout {
-		create_pipeline_layout( device, descriptor_set_layout )
-	};
-
-	const vk::raii::Pipeline pipeline {
-		create_pipeline(
-			device,
-			pipeline_layout,
-			module1,
-			"main",
-			vk::ShaderStageFlagBits::eCompute
-		)
-	};
-
-	const vk::raii::DescriptorPool descriptor_pool {
-		create_descriptor_pool( device, vk::DescriptorType::eStorageBuffer, 2 )
-	};
-
-	const vk::raii::DescriptorSets descriptor_sets {
-		create_descriptor_sets( device, descriptor_pool, descriptor_set_layout )
-	};
-
-	const vk::raii::DescriptorSet& descriptor_set( descriptor_sets.at( 1 ) );
-
-	{ // it appears that these don't need to exist after the update
-		write_descriptor_set_manager<2> descriptors;
-		descriptors.create_set( 0, input_buffer, 0, in_size, descriptor_set, 0, 0, vk::DescriptorType::eStorageBuffer );
-		descriptors.create_set( 1, output_buffer, 0, out_size, descriptor_set, 1, 0, vk::DescriptorType::eStorageBuffer );
-		device.updateDescriptorSets( descriptors.sets(), nullptr );
-	}
-
-	const auto command_pool { create_command_pool( device, queue_family_index ) };
-
-	const auto command_buffer { create_command_buffer( device, command_pool ) };
+	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
+	command_buffer.dispatch( elements, 1, 1 );
+	command_buffer.end();
 
 
-	dispatch_command_buffer(
-		command_buffer,
-		vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
-		pipeline,
-		pipeline_layout,
-		descriptor_set,
-		vk::PipelineBindPoint::eCompute,
-		num_of_members / 4, //x
-		num_of_members / 4, //y
-		1 //z
-	);
-
-	const auto fence { create_waitable_fence( device, command_buffer, queue_family_index ) };
+	const auto fence { create_waitable_fence( inst.device, command_buffer, inst.queue_family_index ) };
 	constexpr uint64_t timeout { 10 };
-	while( vk::Result::eTimeout == device.waitForFences( { *fence }, VK_TRUE, timeout ) );
+	while( vk::Result::eTimeout == inst.device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
 	constexpr vk::DeviceSize out_map_offset { 0 };
-	[[maybe_unused]] int32_t* const out_buffer_ptr {
-		static_cast< int32_t* >( output_memory.mapMemory( out_map_offset, out_size ) )
-	};
-
+	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
 	/// PRINT
-
 	std::cout << "Output Buffer:" << std::endl;
-	for( size_t i = 0; i < out_size; ++i ) // spammy...
+	for( size_t i = 0; i < elements * elements; ++i ) // spammy...
 	{
 		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
-		if( ( i + 1 ) % num_of_members == 0 )
+		if( ( i + 1 ) % elements == 0 )
 		{
 			std::cout << std::endl;
 		}
 	}
+
+	out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 2 ).get_memory() );
+	std::cout << "Output Buffer:" << std::endl;
+	for( size_t i = 0; i < elements * elements; ++i ) // spammy...
+	{
+		std::cout << std::setw( 5 ) << out_buffer_ptr[i] << " ";
+		if( ( i + 1 ) % elements == 0 )
+		{
+			std::cout << std::endl;
+		}
+	}
+
+	{
+		void* test = buffers.at( 0 ).get_memory();
+
+		// TODO range wrapper
+		uint32_t* const in_buffer_data {
+			reinterpret_cast< uint32_t* > ( test )
+		};
+
+		std::cout << "Input Buffer:" << std::endl;
+		for( size_t i = 0; i < elements; ++i )
+		{
+			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
+		}
+		std::cout << std::endl;
+		/// PRINT
+
+		constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
+		buffers.at( 0 ).memory.unmapMemory();
+	}
+
+
 	//
 	/// PRINT
-	output_memory.unmapMemory();
+	buffers.at( 1 ).memory.unmapMemory();
 
 	mainwatch.stop();
 	std::cout << '\n' << mainwatch << std::endl;
 }
 catch( const vk::SystemError& e )
 {
-	std::cerr << "\n\n Vulkan system error:\n\t" << e.what() << std::endl;
+	std::cerr << "\n\n Vulkan system error code:\t" << e.code() << "\n\t error:" << e.what() << std::endl;
 	std::abort();
 }
 catch( const std::exception& e )

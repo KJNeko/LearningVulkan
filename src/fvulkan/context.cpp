@@ -31,7 +31,7 @@ namespace fgl::vulkan
     vk::raii::Instance Context::create_instance( const AppInfo& info )
     {
         const vk::ApplicationInfo appInfo( "VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion );
-        const vk::InstanceCreateInfo ci(
+        vk::InstanceCreateInfo ci(
             vk::InstanceCreateFlags {}, &appInfo,
             static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
             static_cast< uint32_t >( info.extentions.size() ), info.extentions.data()
@@ -44,7 +44,11 @@ namespace fgl::vulkan
         const vk::DeviceQueueCreateInfo device_queue_ci(
             {}, queue_family_index, queue_count, &queue_priority
         );
-        const vk::DeviceCreateInfo device_ci( {}, device_queue_ci );
+
+        std::vector<const char*> layers;
+        std::vector<const char*> extentions { };
+
+        const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
 
         return vk::raii::Device( physical_device, device_ci );
     }
