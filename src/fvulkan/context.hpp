@@ -12,24 +12,24 @@
 namespace fgl::vulkan
 {
 
-    struct AppInfo
-    {
-        uint32_t apiVersion;
-        std::vector<const char*> layer {};
-        std::vector<const char*> extentions {};
-        uint32_t queue_count {};
-        float queue_priority {};
-    };
+	struct AppInfo
+	{
+		uint32_t apiVersion;
+		std::vector<const char*> layer {};
+		std::vector<const char*> extentions {};
+		uint32_t queue_count {};
+		float queue_priority {};
+	};
 
-    //vk::context vk::instance
-    class Context
-    {
-    public:
-        const vk::raii::Context context {};
-        const vk::raii::Instance instance;
-        const vk::raii::PhysicalDevice physical_device;
-        const uint32_t queue_family_index;
-        const vk::raii::Device device;
+	//vk::context vk::instance
+	class Context
+	{
+	public:
+		const vk::raii::Context context {};
+		const vk::raii::Instance instance;
+		const vk::raii::PhysicalDevice physical_device;
+		const uint32_t queue_family_index;
+		const vk::raii::Device device;
 
         uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
@@ -51,16 +51,16 @@ namespace fgl::vulkan
             const uint32_t target_major { VK_VERSION_MAJOR( info.apiVersion ) };
             const uint32_t target_minor { VK_VERSION_MINOR( info.apiVersion ) };
 
-            if( loader_major < target_major
-                || ( loader_major == target_major && loader_minor < target_minor ) )
-            {
-                std::stringstream ss;
-                ss
-                    << "Vulkan API " << target_major << '.' << target_minor
-                    << " is not supported (system has version: "
-                    << loader_major << '.' << loader_minor << ')';
-                throw std::runtime_error( ss.str() );
-            }
+			if( loader_major < target_major
+				|| ( loader_major == target_major && loader_minor < target_minor ) )
+			{
+				std::stringstream ss;
+				ss
+					<< "Vulkan API " << target_major << '.' << target_minor
+					<< " is not supported (system has version: "
+					<< loader_major << '.' << loader_minor << ')';
+				throw std::runtime_error( ss.str() );
+			}
 
 
             if( debug_printing )
@@ -81,32 +81,71 @@ namespace fgl::vulkan
                     << "\n\tMax Compute Shared Memory Size: "
                     << properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
                     << "\n\tCompute Queue Family Index: "
-                    << queue_family_index
-                    << "\n\tMax Compute Work Group Sizes: ";
-
-                for( uint32_t index { 0 };
-                    const auto n : properties.limits.maxComputeWorkGroupSize )
-                {
-                    std::cout << " [" << index++ << "]=" << n;
-                }
-
-                std::cout << "\n\tMax compute Work Group Count: ";
-                for( uint32_t index { 0 };
-                    const auto n : properties.limits.maxComputeWorkGroupCount )
-                {
-                    std::cout << " [" << index++ << "]=" << n;
-                }
-
-                std::cout
-					<< "\n\tMax Compute Inovactions: "
-					<< properties.limits.maxComputeWorkGroupInvocations
-					<< "\n" << std::endl;
-            }
-        }
-
-    };
 
 
+
+					<< queue_family_index << std::endl;
+
+				//Checking if we are an AMD gpu
+				//FUCK NVIDIA WHY DONT YOU HAVE THIS!?!?!??!!?
+				std::vector<vk::ExtensionProperties> extensionProperties {
+					physical_device.enumerateDeviceExtensionProperties()};
+
+				std::string name {"VK_AMD_shader_core_properties2"};
+				auto propertyIterator = std::find_if(
+					extensionProperties.begin(),
+					extensionProperties.end(),
+					[&name]( vk::ExtensionProperties const& ep )
+					{
+						return name == ep.extensionName;
+					}
+				);
+
+				if( propertyIterator != extensionProperties.end() ) //VK_AMD_shader_core_properties2
+				{
+					//Specific to AMD
+					auto properties2 {
+						physical_device.getProperties2<
+							vk::PhysicalDeviceProperties2,
+							vk::PhysicalDeviceShaderCorePropertiesAMD
+						>()
+					};
+
+					vk::PhysicalDeviceShaderCorePropertiesAMD const& shaderCoreProperties {
+						properties2.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()
+					};
+
+					std::cout
+						<< "\n\tShader Engine Count: " << shaderCoreProperties.shaderEngineCount
+						<< "\n\tShader Arrays Per Engine Count: " << shaderCoreProperties.shaderArraysPerEngineCount
+						<< "\n\tCompute Units Per Shader Array: " << shaderCoreProperties.computeUnitsPerShaderArray
+						<< "\n\tSIMD Per Compute Unit: " << shaderCoreProperties.simdPerComputeUnit
+						<< "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd << "\n";
+				}
+
+				std::cout << "\n\tMax Compute Work Group Sizes: ";
+
+				for( uint32_t index { 0 };
+					const auto n : properties.limits.maxComputeWorkGroupSize )
+				{
+					std::cout << " [" << index++ << "]=" << n;
+				}
+
+				std::cout << "\n\tMax compute Work Group Count: ";
+				for( uint32_t index { 0 };
+					const auto n : properties.limits.maxComputeWorkGroupCount )
+				{
+					std::cout << " [" << index++ << "]=" << n;
+				}
+
+				std::cout << "\n\tMax Compute Inovactions: " << properties.limits.maxComputeWorkGroupInvocations << std::endl;
+
+				std::cout << "\n" << std::endl;
+			}
+
+		}
+
+	};
 
 }
 

@@ -19,15 +19,15 @@ namespace fgl::vulkan
 			physical_device.getQueueFamilyProperties()
 		};
 
-        if( const auto it { std::ranges::find_if( props, has_flag ) };
-            it != end )
-        {
-            return static_cast< uint32_t >( std::distance( props.cbegin(), it ) );
-        }
-        else throw std::runtime_error(
-            "Vulkan couldn't find a graphics queue family."
-        );
-    }
+		if( const auto it { std::ranges::find_if( props, has_flag ) };
+			it != end )
+		{
+			return static_cast< uint32_t >( std::distance( props.cbegin(), it ) );
+		}
+		else throw std::runtime_error(
+			"Vulkan couldn't find a graphics queue family."
+		);
+	}
 
     vk::raii::Instance Context::create_instance( const AppInfo& info ) const
     {
@@ -50,12 +50,12 @@ namespace fgl::vulkan
             {}, queue_family_index, queue_count, &queue_priority
         );
 
-        std::vector<const char*> layers;
-        std::vector<const char*> extentions { };
+		std::vector<const char*> layers;
+		std::vector<const char*> extentions { };
 
-        const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
+		const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
 
-        return vk::raii::Device( physical_device, device_ci );
-    }
+		return vk::raii::Device( physical_device, device_ci );
+	}
 
 }
