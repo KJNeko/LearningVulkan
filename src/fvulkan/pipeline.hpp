@@ -14,26 +14,6 @@
 namespace fgl::vulkan
 {
 
-	//TODO PIPELINE
-	/*
-	DEPENDS
-
-
-	vk::raii::DescriptorSetLayout
-	vk::raii::PipelineLayout
-	vk::raii::Pipeline
-
-
-	Needs path to shader.
-	shader "main" name
-
-
-	DescriptorsetLayout needs buffers and types. Can be gotten from class Memory in memory.hpp
-	*/
-
-
-
-
 	class Pipeline
 	{
 	public:

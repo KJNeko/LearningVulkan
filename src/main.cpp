@@ -27,41 +27,8 @@ constexpr bool debug_printing {
 #endif// NDEBUG
 };
 
-using cstring = const char*;
-
-
-
-// globals for configuration
-constexpr cstring appName { "VulkanCompute" };
-constexpr uint32_t appVersion {};
-constexpr cstring engineName {};
-constexpr uint32_t engineVersion {};
-constexpr auto apiVersion { VK_API_VERSION_1_2 };
-constexpr std::array layers { "VK_LAYER_KHRONOS_validation" };
-constexpr std::array<cstring, 0> extensions {};
-
 // could use StructureChain, but it would be more verbose?
 // https://github.com/KhronosGroup/Vulkan-Hpp/search?q=StructureChain
-
-void verify_version_requirements( const vk::raii::Context& context )
-{
-	const uint32_t loaded_version { context.enumerateInstanceVersion() };
-	const uint32_t loader_major { VK_VERSION_MAJOR( loaded_version ) };
-	const uint32_t loader_minor { VK_VERSION_MINOR( loaded_version ) };
-	const uint32_t target_major { VK_VERSION_MAJOR( apiVersion ) };
-	const uint32_t target_minor { VK_VERSION_MINOR( apiVersion ) };
-
-	if( loader_major < target_major
-		|| ( loader_major == target_major && loader_minor < target_minor ) )
-	{
-		std::stringstream ss;
-		ss
-			<< "Vulkan API " << target_major << '.' << target_minor
-			<< " is not supported (system has version: "
-			<< loader_major << '.' << loader_minor << ')';
-		throw std::runtime_error( ss.str() );
-	}
-}
 
 auto create_command_pool(
 	const vk::raii::Device& device,
@@ -102,64 +69,9 @@ auto create_waitable_fence(
 	return fence;
 }
 
-/// <DEBUG PRINTING>
-void debug_print( const std::string_view message )
-{
-	if constexpr( debug_printing )
-		std::cout << message << std::endl;
-}
-
-void debug_print(
-	const vk::raii::Context& context,
-	const vk::raii::PhysicalDevice& physical_device,
-	const uint32_t queue_family_index )
-{
-	if constexpr( debug_printing )
-	{
-		const uint32_t loaded_version { context.enumerateInstanceVersion() };
-		const uint32_t loader_major { VK_VERSION_MAJOR( loaded_version ) };
-		const uint32_t loader_minor { VK_VERSION_MINOR( loaded_version ) };
-		const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
-		const uint32_t target_major { VK_VERSION_MAJOR( apiVersion ) };
-		const uint32_t target_minor { VK_VERSION_MINOR( apiVersion ) };
-		const uint32_t target_patch { VK_VERSION_PATCH( apiVersion ) };
-		const auto& properties { physical_device.getProperties() };
-		std::cout
-			<< "\n\tDevice Name: " << properties.deviceName
-			<< "\n\tMinimum required Vulkan API v"
-			<< target_major << '.' << target_minor << '.' << target_patch
-			<< "\n\tDetected running Vulkan API v"
-			<< loader_major << '.' << loader_minor << '.' << loader_patch
-			<< "\n\tHas support for  Vulkan API v"
-			<< VK_VERSION_MAJOR( properties.apiVersion ) << '.'
-			<< VK_VERSION_MINOR( properties.apiVersion ) << '.'
-			<< VK_VERSION_PATCH( properties.apiVersion )
-			<< "\n\tMax Compute Shared Memory Size: "
-			<< properties.limits.maxComputeSharedMemorySize / 1024 << " KB"
-			<< "\n\tCompute Queue Family Index: "
-			<< queue_family_index
-			<< "\n\tMax Compute Work Group Sizes: ";
-
-		for( uint32_t index { 0 };
-			const auto n : properties.limits.maxComputeWorkGroupSize )
-		{
-			std::cout << " [" << index++ << "]=" << n;
-		}
-
-		std::cout << "\n\tMax compute Work Group Count: ";
-		for( uint32_t index { 0 };
-			const auto n : properties.limits.maxComputeWorkGroupCount )
-		{
-			std::cout << " [" << index++ << "]=" << n;
-		}
-
-		std::cout << "\n\tMax Compute Inovactions: " << properties.limits.maxComputeWorkGroupInvocations << std::endl;
-
-		std::cout << "\n" << std::endl;
-	}
-}
-/// </DEBUG PRINTING>
 #include <unordered_map>
+
+#include "range_wrapper.hpp"
 
 int main() try
 {
@@ -175,11 +87,9 @@ int main() try
 		0.0
 	);
 
-	fgl::vulkan::Context inst( info );
+	fgl::vulkan::Context inst( info, true );
 
-	debug_print( inst.context, inst.physical_device, inst.queue_family_index );
-
-	constexpr size_t elements = 8;
+	constexpr size_t elements = 512;
 	vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 
@@ -231,12 +141,14 @@ int main() try
 				reinterpret_cast< uint32_t* > ( test )
 		};
 
+		uint32_t& matrixsize = in_buffer_data[0];
+		uint32_t* matrix = &in_buffer_data[1];
 
-		in_buffer_data[0] = elements;
+		matrixsize = elements;
 
-		for( size_t i = 1; i < elements + 1; ++i )
+		for( size_t i = 0; i < elements; ++i )
 		{
-			in_buffer_data[i] = static_cast< uint32_t >( i - 1 );
+			matrix[i] = static_cast< uint32_t >( i );
 		}
 
 		std::cout << "Input Buffer:" << std::endl;
@@ -245,12 +157,9 @@ int main() try
 			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
 		}
 		std::cout << std::endl;
-		/// PRINT
 
-		constexpr vk::DeviceSize io_buffer_bind_offset { 0 };
 		buffers.at( 0 ).memory.unmapMemory();
 	}
-
 
 	const auto command_pool { create_command_pool( inst.device, inst.queue_family_index ) };
 
@@ -269,7 +178,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( 2, 2, 1 );
+	command_buffer.dispatch( elements / 4, elements / 4, 1 );
 	command_buffer.end();
 
 
@@ -281,7 +190,7 @@ int main() try
 	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
 
 	/// PRINT
-	std::cout << "Output Buffer:" << std::endl;
+	/*std::cout << "Output Buffer:" << std::endl;
 	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
@@ -290,7 +199,7 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}
+	}*/
 
 	//
 	/// PRINT
