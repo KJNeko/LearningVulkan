@@ -10,5 +10,5 @@ PROJ=main.exe
 : {objs} |> !LN |> $(BIN_DIR)/$(PROJ)
 
 # Assembly outputs
-: foreach src/fvulkan/*.cpp |> !ASM |> src/fvulkan/%B.s
-: foreach src/*.cpp |> !ASM |> src/%B.s
+#: foreach src/fvulkan/*.cpp |> !ASM |> $(ASM_DIR)/fvulkan/%B.s
+#: foreach src/*.cpp |> !ASM |> $(ASM_DIR)/%B.s
