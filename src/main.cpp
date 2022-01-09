@@ -88,7 +88,7 @@ int main() try
 
 	assert( invocationsPerDispatch * invocationsPerDispatch < inst.properties.limits.maxComputeWorkGroupInvocations ); //Too many invocationsPerDispatch
 	assert( totalsize < inst.properties.limits.maxMemoryAllocationCount ); //Too many elements allocated
-
+	assert( dispatchNum < inst.properties.limits.maxComputeWorkGroupCount.front() );
 
 	//Allocate a single memory segment for the buffers being passed in
 	/*
