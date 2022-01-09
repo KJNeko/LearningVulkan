@@ -31,6 +31,9 @@ namespace fgl::vulkan
 		const uint32_t queue_family_index;
 		const vk::raii::Device device;
 
+		//Properties
+		vk::PhysicalDeviceProperties properties;
+
 		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
 		vk::raii::Instance create_instance( const AppInfo& info ) const;
@@ -43,7 +46,8 @@ namespace fgl::vulkan
 			instance( create_instance( info ) ),
 			physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
 			queue_family_index( index_of_first_queue_family( vk::QueueFlagBits::eCompute ) ),
-			device( create_device( info.queue_count, info.queue_priority ) )
+			device( create_device( info.queue_count, info.queue_priority ) ),
+			properties( physical_device.getProperties() )
 		{
 			const uint32_t loaded_version { context.enumerateInstanceVersion() };
 			const uint32_t loader_major { VK_VERSION_MAJOR( loaded_version ) };
@@ -66,7 +70,6 @@ namespace fgl::vulkan
 			{
 				const uint32_t loader_patch { VK_VERSION_PATCH( loaded_version ) };
 				const uint32_t target_patch { VK_VERSION_PATCH( info.apiVersion ) };
-				const auto& properties { physical_device.getProperties() };
 				std::cout
 					<< "\n\tDevice Name: " << properties.deviceName
 					<< "\n\tMinimum required Vulkan API v"
@@ -170,7 +173,7 @@ namespace fgl::vulkan
 					std::cout << " [" << index++ << "]=" << n;
 				}
 
-				std::cout << "\n\tMax compute Work Group Count: ";
+				std::cout << "\n\tMax Compute Work Group Count: ";
 				for( uint32_t index { 0 };
 					const auto n : properties.limits.maxComputeWorkGroupCount )
 				{

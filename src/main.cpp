@@ -61,8 +61,6 @@ auto create_waitable_fence(
 	return fence;
 }
 
-#include <unordered_map>
-
 int main() try
 {
 
@@ -79,9 +77,17 @@ int main() try
 
 	fgl::vulkan::Context inst( info, true );
 
-	constexpr size_t elements = 32;
-	vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
-	vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
+	constexpr size_t elements = 30000;
+	constexpr vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
+	constexpr vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
+	constexpr size_t invocationsPerDispatch = 16;
+	constexpr size_t dispatchNum = elements / invocationsPerDispatch;
+	constexpr size_t totalsize = insize + outsize;
+
+	//TODO: Add some security checks to ensure we are not dispatching too many calls and allocating too much memory
+
+	assert( invocationsPerDispatch * invocationsPerDispatch < inst.properties.limits.maxComputeWorkGroupInvocations ); //Too many invocationsPerDispatch
+	assert( totalsize < inst.properties.limits.maxMemoryAllocationCount ); //Too many elements allocated
 
 
 	//Allocate a single memory segment for the buffers being passed in
@@ -141,13 +147,13 @@ int main() try
 			matrix[i] = static_cast< uint32_t >( i );
 		}
 
-		std::cout << "Input Buffer:" << std::endl;
+		/*std::cout << "Input Buffer:" << std::endl;
 		for( size_t i = 0; i < elements; ++i )
 		{
 			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
 		}
 		std::cout << std::endl;
-
+*/
 		buffers.at( 0 ).memory.unmapMemory();
 	}
 
@@ -168,7 +174,10 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( elements / 4, elements / 4, 1 );
+	command_buffer.dispatch( dispatchNum, dispatchNum, 1 );
+	//Find a way to make the command_buffer wait for the previous dispatch to fully complete.
+
+
 	command_buffer.end();
 
 
@@ -181,7 +190,7 @@ int main() try
 
 	/// PRINT
 	std::cout << "Output Buffer:" << std::endl;
-	for( size_t y = 0; y < elements; ++y )// spammy...
+	/*for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
 		{
@@ -189,7 +198,7 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}
+	}*/
 
 	//
 	/// PRINT
