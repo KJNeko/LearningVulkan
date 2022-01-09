@@ -7,4 +7,8 @@ PROJ=main.exe
 # Compile compilation units in src dir
 : foreach src/fvulkan/*.cpp |> !CC |> $(OBJ_DIR)/%B.o {objs}
 : foreach src/*.cpp |> !CC |> $(OBJ_DIR)/%B.o {objs}
-:  {objs} |> !LN |> $(BIN_DIR)/$(PROJ)
+: {objs} |> !LN |> $(BIN_DIR)/$(PROJ)
+
+# Assembly outputs
+: foreach src/fvulkan/*.cpp |> !ASM |> $(ASM_DIR)/fvulkan/%B.s
+: foreach src/*.cpp |> !ASM |> $(ASM_DIR)/%B.s
