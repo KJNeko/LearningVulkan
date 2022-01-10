@@ -2,9 +2,9 @@
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
-layout(std430, binding = 0) readonly buffer InputBuffer{
+layout(binding = 0) readonly buffer InputBuffer{
     int matrixsize;
-    uint inData_SSBO[];
+    uint inData[];
 } inputDat;
 
 layout(set = 0, binding = 1) buffer OutputBuffer
@@ -26,5 +26,5 @@ void main(void)
         //Return early to prevent the shader from accessing invalid/unallocated memory
     }
 
-    outputData.outData[outindex] = inputDat.inData_SSBO[indexy] * inputDat.inData_SSBO[index];
+    outputData.outData[outindex] = inputDat.inData[indexy] * inputDat.inData[index];
 }
