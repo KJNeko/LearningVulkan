@@ -86,9 +86,21 @@ int main() try
 
 	//TODO: Add some security checks to ensure we are not dispatching too many calls and allocating too much memory
 
-	assert( invocationsPerDispatch * invocationsPerDispatch < inst.properties.limits.maxComputeWorkGroupInvocations ); //Too many invocationsPerDispatch
-	assert( totalsize < inst.properties.limits.maxMemoryAllocationCount ); //Too many elements allocated
-	assert( dispatchNum < inst.properties.limits.maxComputeWorkGroupCount.front() );
+	//assert( invocationsPerDispatch * invocationsPerDispatch < inst.properties.limits.maxComputeWorkGroupInvocations ); //Too many invocationsPerDispatch
+
+	if( invocationsPerDispatch * invocationsPerDispatch >= inst.properties.limits.maxComputeWorkGroupInvocations )
+	{
+		throw std::runtime_error( "Too many invocations per dispatch. Lower the elements count" );
+	}
+
+	//assert( totalsize < inst.properties.limits.maxMemoryAllocationCount ); //Too many elements allocated
+
+	if( dispatchNum >= inst.properties.limits.maxComputeWorkGroupCount.front() )
+	{
+		throw std::runtime_error( "dispatch number is too high for supported GPU. Lower the elements count" );
+	}
+
+	//assert( dispatchNum < inst.properties.limits.maxComputeWorkGroupCount.front() );
 
 	//Allocate a single memory segment for the buffers being passed in
 	/*
@@ -175,14 +187,11 @@ int main() try
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
 	command_buffer.dispatch( dispatchNum, dispatchNum, 1 );
-	//Find a way to make the command_buffer wait for the previous dispatch to fully complete.
-
-
 	command_buffer.end();
 
 
 	const auto fence { create_waitable_fence( inst.device, command_buffer, inst.queue_family_index ) };
-	constexpr uint64_t timeout { 10 };
+	constexpr uint64_t timeout { 30 };
 	while( vk::Result::eTimeout == inst.device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
 	//constexpr vk::DeviceSize out_map_offset { 0 };
