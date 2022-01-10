@@ -191,7 +191,7 @@ int main() try
 
 
 	const auto fence { create_waitable_fence( inst.device, command_buffer, inst.queue_family_index ) };
-	constexpr uint64_t timeout { 30 };
+	constexpr uint64_t timeout { 5 };
 	while( vk::Result::eTimeout == inst.device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
 	//constexpr vk::DeviceSize out_map_offset { 0 };

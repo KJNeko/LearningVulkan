@@ -55,16 +55,7 @@ namespace fgl::vulkan
 			const uint32_t target_major { VK_VERSION_MAJOR( info.apiVersion ) };
 			const uint32_t target_minor { VK_VERSION_MINOR( info.apiVersion ) };
 
-			if( loader_major < target_major
-				|| ( loader_major == target_major && loader_minor < target_minor ) )
-			{
-				std::stringstream ss;
-				ss
-					<< "Vulkan API " << target_major << '.' << target_minor
-					<< " is not supported (system has version: "
-					<< loader_major << '.' << loader_minor << ')';
-				throw std::runtime_error( ss.str() );
-			}
+
 
 			if( debug_printing )
 			{
@@ -184,6 +175,17 @@ namespace fgl::vulkan
 					<< "\n\tMax Compute Inovactions: "
 					<< properties.limits.maxComputeWorkGroupInvocations
 					<< "\n\n" << std::endl;
+			}
+
+			if( loader_major < target_major
+				|| ( loader_major == target_major && loader_minor < target_minor ) )
+			{
+				std::stringstream ss;
+				ss
+					<< "Vulkan API " << target_major << '.' << target_minor
+					<< " is not supported (system has version: "
+					<< loader_major << '.' << loader_minor << ')';
+				throw std::runtime_error( ss.str() );
 			}
 
 		}
