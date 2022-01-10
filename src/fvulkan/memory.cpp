@@ -58,7 +58,7 @@ namespace fgl::vulkan
 	{
 		const auto [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
 
-		bytecount += bytesize;
+		bytecount += buffer.getMemoryRequirements().size;
 		if( context.physical_device.getMemoryProperties().memoryHeaps[1].size < bytecount )
 		{
 			std::stringstream ss;
@@ -71,7 +71,7 @@ namespace fgl::vulkan
 			throw std::runtime_error( ss.str() );
 		}
 
-		const vk::MemoryAllocateInfo memInfo( bytesize, memindex );
+		const vk::MemoryAllocateInfo memInfo( buffer.getMemoryRequirements().size, memindex );
 
 		return context.device.allocateMemory( memInfo );
 	}
