@@ -77,7 +77,7 @@ int main() try
 
 	fgl::vulkan::Context inst( info, true );
 
-	constexpr size_t elements = 30000;
+	constexpr size_t elements = 512;
 	constexpr vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	constexpr vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 	constexpr size_t invocationsPerDispatch = 16;

@@ -59,14 +59,14 @@ namespace fgl::vulkan
 		const auto [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
 
 		bytecount += bytesize;
-		if( context.properties.limits.maxMemoryAllocationCount < bytecount )
+		if( context.physical_device.getMemoryProperties().memoryHeaps[1].size < bytecount )
 		{
 			std::stringstream ss;
 			ss << "Attempting to allocate too much memory (in Byte)\n";
 			ss << "\tMemory allocated: " << bytesize << "\n";
-			ss << "\tMaximum Memory: " << context.properties.limits.maxMemoryAllocationCount << "\n";
+			ss << "\tMaximum Memory: " << context.physical_device.getMemoryProperties().memoryHeaps[1].size << "\n";
 			ss << "\tMemory avalilable: " << context.properties.limits.maxMemoryAllocationCount - ( bytecount - bytesize ) << "\n";
-			ss << "\tMemory Over: " << bytecount - context.properties.limits.maxMemoryAllocationCount - ( bytecount - bytesize ) << "\n";
+			ss << "\tMemory Over: " << bytecount - context.physical_device.getMemoryProperties().memoryHeaps[1].size - ( bytecount - bytesize ) << "\n";
 
 			throw std::runtime_error( ss.str() );
 		}
