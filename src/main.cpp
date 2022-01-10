@@ -68,7 +68,7 @@ int main() try
 	mainwatch.start();
 
 	fgl::vulkan::AppInfo info(
-		VK_API_VERSION_1_2,
+		VK_API_VERSION_1_1,
 		{ "VK_LAYER_KHRONOS_validation" },
 		{},
 		1,
@@ -77,7 +77,7 @@ int main() try
 
 	fgl::vulkan::Context inst( info, true );
 
-	constexpr size_t elements = 512;
+	constexpr size_t elements = 8;
 	constexpr vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	constexpr vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 	constexpr size_t invocationsPerDispatch = 16;
@@ -159,13 +159,13 @@ int main() try
 			matrix[i] = static_cast< uint32_t >( i );
 		}
 
-		/*std::cout << "Input Buffer:" << std::endl;
+		std::cout << "Input Buffer:" << std::endl;
 		for( size_t i = 0; i < elements; ++i )
 		{
 			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
 		}
 		std::cout << std::endl;
-*/
+
 		buffers.at( 0 ).memory.unmapMemory();
 	}
 
@@ -186,7 +186,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( dispatchNum, dispatchNum, 1 );
+	command_buffer.dispatch( dispatchNum + 1, dispatchNum + 1, 1 );
 	command_buffer.end();
 
 
@@ -199,7 +199,7 @@ int main() try
 
 	/// PRINT
 	std::cout << "Output Buffer:" << std::endl;
-	/*for( size_t y = 0; y < elements; ++y )// spammy...
+	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
 		{
@@ -207,7 +207,7 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}*/
+	}
 
 	//
 	/// PRINT
