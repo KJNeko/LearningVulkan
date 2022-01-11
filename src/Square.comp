@@ -1,6 +1,6 @@
 #version 450 core
 
-layout(local_size_x = 16, local_size_y = 16) in;
+layout(local_size_x = 2, local_size_y = 2) in;
 
 layout(binding = 0) readonly buffer InputBuffer{
     int matrixsize;

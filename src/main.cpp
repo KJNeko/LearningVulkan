@@ -77,10 +77,10 @@ int main() try
 
 	fgl::vulkan::Context inst( info, true );
 
-	constexpr size_t elements = 8;
+	constexpr size_t elements = 512;
 	constexpr vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );
 	constexpr vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
-	constexpr size_t invocationsPerDispatch = 16;
+	constexpr size_t invocationsPerDispatch = 2;
 	constexpr size_t dispatchNum = elements / invocationsPerDispatch;
 	constexpr size_t totalsize = insize + outsize;
 
@@ -159,12 +159,13 @@ int main() try
 			matrix[i] = static_cast< uint32_t >( i );
 		}
 
-		std::cout << "Input Buffer:" << std::endl;
-		for( size_t i = 0; i < elements; ++i )
+		/*std::cout << "Input Buffer:" << std::endl;
+		for( size_t i = 0; i < elements + 1; ++i )
 		{
 			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
 		}
-		std::cout << std::endl;
+		std::cout << std::endl;*/
+
 
 		buffers.at( 0 ).memory.unmapMemory();
 	}
@@ -186,7 +187,7 @@ int main() try
 	}
 
 	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( dispatchNum + 1, dispatchNum + 1, 1 );
+	command_buffer.dispatch( dispatchNum, dispatchNum, 1 );
 	command_buffer.end();
 
 
@@ -198,7 +199,7 @@ int main() try
 	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
 
 	/// PRINT
-	std::cout << "Output Buffer:" << std::endl;
+	/*std::cout << "Output Buffer:" << std::endl;
 	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
@@ -207,7 +208,7 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}
+	}*/
 
 	//
 	/// PRINT
