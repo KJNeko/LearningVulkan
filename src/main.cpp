@@ -17,6 +17,8 @@
 
 #include <fgl/vulkan.hpp>
 
+#include <fgl/types/range_wrapper.hpp>
+
 // could use StructureChain, but it would be more verbose?
 // https://github.com/KhronosGroup/Vulkan-Hpp/search?q=StructureChain
 
@@ -139,32 +141,31 @@ int main() try
 	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "Square.spv" ), std::string( "main" ), buffers );
 
 	{
-		void* test = buffers.at( 0 ).get_memory();
+		auto& fglbuffer{ buffers.at( 0 ) };
 
-		// TODO range wrapper
 		uint32_t* const in_buffer_data {
-				reinterpret_cast< uint32_t* > ( test )
+				reinterpret_cast< uint32_t* > ( fglbuffer.get_memory() )
 		};
 
-		uint32_t& matrixsize = in_buffer_data[0];
-		uint32_t* matrix = &in_buffer_data[1];
+		in_buffer_data[0] = elements; // matrix size
 
-		matrixsize = elements;
+		auto matrix{ fgl::make_range(&in_buffer_data[1], elements) };
 
-		for( size_t i = 0; i < elements; ++i )
+		for(uint32_t i{ 0 }; auto& element : matrix)
 		{
-			matrix[i] = static_cast< uint32_t >( i );
+			element = i++;
 		}
 
-		/*std::cout << "Input Buffer:" << std::endl;
-		for( size_t i = 0; i < elements + 1; ++i )
+		/*
+		std::cout << "Input Buffer:" << std::endl;
+		for(auto element : matrix)
 		{
-			std::cout << std::setw( 5 ) << in_buffer_data[i] << " ";
+			std::cout << std::setw( 5 ) << element << " ";
 		}
-		std::cout << std::endl;*/
+		std::cout << std::endl;
+		//*/
 
-
-		buffers.at( 0 ).memory.unmapMemory();
+		fglbuffer.memory.unmapMemory();
 	}
 
 	const fgl::vulkan::CommandQueue command(
