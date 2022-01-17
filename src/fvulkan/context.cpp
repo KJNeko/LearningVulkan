@@ -4,6 +4,30 @@
 
 namespace fgl::vulkan
 {
+	uint32_t Context::index_of_first_queue_family(const vk::QueueFlagBits flag ) const
+	{
+		const auto has_flag {
+			[flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool
+			{ // lambda function for find_if predicate
+				return static_cast< bool >( qfp.queueFlags & flag );
+			}
+		};
+
+		const auto end = physical_device.getQueueFamilyProperties().cend();
+		const std::vector<vk::QueueFamilyProperties>& props {
+			physical_device.getQueueFamilyProperties()
+		};
+
+		if( const auto it { std::ranges::find_if( props, has_flag ) };
+			it != end )
+		{
+			return static_cast< uint32_t >( std::distance( props.cbegin(), it ) );
+		}
+		else throw std::runtime_error(
+			"Vulkan couldn't find a graphics queue family."
+		);
+	}
+
 namespace internal {
 	vk::raii::Instance create_instance(
 		const vk::raii::Context& context,
@@ -39,30 +63,6 @@ namespace internal {
 	}
 } // namespace internal
 
-	uint32_t Context::index_of_first_queue_family(const vk::QueueFlagBits flag ) const
-	{
-		const auto has_flag {
-			[flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool
-			{ // lambda function for find_if predicate
-				return static_cast< bool >( qfp.queueFlags & flag );
-			}
-		};
-
-		const auto end = physical_device.getQueueFamilyProperties().cend();
-		const std::vector<vk::QueueFamilyProperties>& props {
-			physical_device.getQueueFamilyProperties()
-		};
-
-		if( const auto it { std::ranges::find_if( props, has_flag ) };
-			it != end )
-		{
-			return static_cast< uint32_t >( std::distance( props.cbegin(), it ) );
-		}
-		else throw std::runtime_error(
-			"Vulkan couldn't find a graphics queue family."
-		);
-	}
-
 	Context::Context( const AppInfo& info )
 	:
 		context{},
@@ -73,6 +73,8 @@ namespace internal {
 		properties( physical_device.getProperties() ),
 		version_info(context.enumerateInstanceVersion(), info.apiVersion)
 	{}
+
+	/// INFO PRINTING
 
 	void Context::print_debug_info() const
 	{
