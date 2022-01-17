@@ -12,7 +12,7 @@ PROJECT_WARNING=
 PROJECT_CODEGEN= -fno-omit-frame-pointer -fno-rtti
 PROJECT_LINKAGE= -shared-libgcc
 #PROJECT_INCLUDES= -I"$(ROOT)/include/"
-PROJECT_INCLUDES=
+PROJECT_INCLUDES=-I"./include/" -I"./libFGL/include/"
 PROJECT_LIBRARIES=
 
 OBJ_DIR=$(ROOT)/obj
