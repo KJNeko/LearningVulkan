@@ -30,10 +30,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #inclusion of project files#
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 
-include_directories(${FORMS_DIR})
 include_directories(${INCLUDE_DIR})
 include_directories(${SOURCE_DIR})
-include_directories(${FGL_DIR})
 
 add_custom_command(
     OUTPUT "${CMAKE_SOURCE_DIR}/Square.spv"
@@ -59,7 +57,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 ##SETUP EXE##
 
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS} ${FORMS_DIR})
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS})
 
 if(WIN32)
     add_executable(VulkanCompute WIN32 ${SOURCES})
@@ -67,9 +65,7 @@ elseif(UNIX)
     add_executable(VulkanCompute ${SOURCES})
 endif()
 
-target_include_directories(VulkanCompute PRIVATE ${FORMS_DIR})
 target_include_directories(VulkanCompute PRIVATE ${INCLUDE_DIR})
 target_include_directories(VulkanCompute PRIVATE ${SOURCE_DIR})
-target_include_directories(VulkanCompute PRIVATE ${FLG_DIR})
 
 add_dependencies(VulkanCompute ComputeShader)
