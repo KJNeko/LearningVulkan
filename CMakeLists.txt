@@ -50,11 +50,6 @@ file(GLOB_RECURSE SOURCES
     "${SOURCE_DIR}/*.comp"
 )
 
-#opencv inclusion#
-
-find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
 ##SETUP EXE##
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS})
