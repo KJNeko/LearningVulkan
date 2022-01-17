@@ -15,9 +15,7 @@
 
 #include "stopwatch.hpp"
 
-#include "fvulkan/context.hpp"
-#include "fvulkan/memory.hpp"
-#include "fvulkan/pipeline.hpp"
+#include <fgl/vulkan.hpp>
 
 // could use StructureChain, but it would be more verbose?
 // https://github.com/KhronosGroup/Vulkan-Hpp/search?q=StructureChain

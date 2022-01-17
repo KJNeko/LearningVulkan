@@ -1,7 +1,7 @@
 #include <vulkan/vulkan_raii.hpp>
 
-#include "memory.hpp"
-#include "context.hpp"
+#include <fgl/vulkan/memory.hpp>
+#include <fgl/vulkan/context.hpp>
 
 namespace fgl::vulkan
 {
