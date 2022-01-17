@@ -37,7 +37,6 @@ auto create_waitable_fence(
 
 int main() try
 {
-
 	stopwatch::Stopwatch mainwatch( "Main" );
 	mainwatch.start();
 
@@ -49,7 +48,8 @@ int main() try
 		0.0
 	);
 
-	fgl::vulkan::Context inst( info, true );
+	fgl::vulkan::Context inst( info );
+	inst.print_debug_info();
 
 	constexpr size_t elements = 512;
 	constexpr vk::DeviceSize insize = elements * sizeof( uint32_t ) + sizeof( uint32_t );

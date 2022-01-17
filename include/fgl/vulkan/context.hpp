@@ -2,11 +2,11 @@
 #define FGL_VULKAN_CONTEXT_HPP_INCLUDED
 
 #include <cstdint>
-#include <vector>
+#include <iostream>
 
 #include <vulkan/vulkan_raii.hpp>
 
-#include <iostream>
+#include "./internal/version.hpp"
 
 
 namespace fgl::vulkan
@@ -21,23 +21,23 @@ namespace fgl::vulkan
 		float queue_priority {};
 	};
 
-	//vk::context vk::instance
 	class Context
 	{
 	public:
-		const vk::raii::Context context {};
+		const vk::raii::Context context;
 		const vk::raii::Instance instance;
 		const vk::raii::PhysicalDevice physical_device;
 		const uint32_t queue_family_index;
 		const vk::raii::Device device;
+		const vk::PhysicalDeviceProperties properties;
+		const internal::VersionInfo version_info;
 
+		[[nodiscard]]
 		uint32_t index_of_first_queue_family(const vk::QueueFlagBits flag ) const;
 
-		vk::PhysicalDeviceProperties properties;
+		[[nodiscard]] explicit Context( const AppInfo& info );
 
-		[[nodiscard]] explicit
-		Context( const AppInfo& info, const bool debug_printing = false );
-
+		void print_debug_info() const;
 	};
 
 }
