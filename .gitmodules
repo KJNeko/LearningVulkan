@@ -1,0 +1,3 @@
+[submodule "libFGL"]
+	path = libFGL
+	url = git@github.com:alaestor/libFGL.git
