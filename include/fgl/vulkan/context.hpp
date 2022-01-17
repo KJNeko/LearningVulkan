@@ -31,14 +31,9 @@ namespace fgl::vulkan
 		const uint32_t queue_family_index;
 		const vk::raii::Device device;
 
-		//Properties
+		uint32_t index_of_first_queue_family(const vk::QueueFlagBits flag ) const;
+
 		vk::PhysicalDeviceProperties properties;
-
-		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
-
-		vk::raii::Instance create_instance( const AppInfo& info ) const;
-
-		vk::raii::Device create_device( uint32_t queue_count, float queue_priority ) const;
 
 		[[nodiscard]] explicit
 		Context( const AppInfo& info, const bool debug_printing = false );

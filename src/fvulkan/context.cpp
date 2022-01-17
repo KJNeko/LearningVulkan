@@ -4,8 +4,42 @@
 
 namespace fgl::vulkan
 {
-	//VULKAN
-	uint32_t Context::index_of_first_queue_family( const vk::QueueFlagBits flag ) const
+namespace internal {
+	vk::raii::Instance create_instance(
+		const vk::raii::Context& context,
+		const AppInfo& info )
+	{
+		const vk::ApplicationInfo appInfo(
+			"VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion
+		);
+		vk::InstanceCreateInfo ci(
+			vk::InstanceCreateFlags {}, &appInfo,
+			static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
+			static_cast< uint32_t >( info.extentions.size() ), info.extentions.data()
+		);
+		return vk::raii::Instance( context, ci );
+	}
+
+	vk::raii::Device create_device(
+		const vk::raii::PhysicalDevice& physical_device,
+		const uint32_t queue_count,
+		const float queue_priority,
+		const uint32_t queue_family_index)
+	{
+		const vk::DeviceQueueCreateInfo device_queue_ci(
+			{}, queue_family_index, queue_count, &queue_priority
+		);
+
+		std::vector<const char*> layers;
+		std::vector<const char*> extentions { };
+
+		const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
+
+		return vk::raii::Device( physical_device, device_ci );
+	}
+} // namespace internal
+
+	uint32_t Context::index_of_first_queue_family(const vk::QueueFlagBits flag ) const
 	{
 		const auto has_flag {
 			[flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool
@@ -29,41 +63,12 @@ namespace fgl::vulkan
 		);
 	}
 
-	vk::raii::Instance Context::create_instance( const AppInfo& info ) const
-	{
-		const vk::ApplicationInfo appInfo(
-			"VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion
-		);
-		vk::InstanceCreateInfo ci(
-			vk::InstanceCreateFlags {}, &appInfo,
-			static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
-			static_cast< uint32_t >( info.extentions.size() ), info.extentions.data()
-		);
-		return vk::raii::Instance( context, ci );
-	}
-
-	vk::raii::Device Context::create_device(
-		const uint32_t queue_count,
-		const float queue_priority ) const
-	{
-		const vk::DeviceQueueCreateInfo device_queue_ci(
-			{}, queue_family_index, queue_count, &queue_priority
-		);
-
-		std::vector<const char*> layers;
-		std::vector<const char*> extentions { };
-
-		const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
-
-		return vk::raii::Device( physical_device, device_ci );
-	}
-
 	Context::Context( const AppInfo& info, const bool debug_printing)
 	:
-		instance( create_instance( info ) ),
+		instance( internal::create_instance( context, info ) ),
 		physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
 		queue_family_index( index_of_first_queue_family( vk::QueueFlagBits::eCompute ) ),
-		device( create_device( info.queue_count, info.queue_priority ) ),
+		device( internal::create_device(physical_device, info.queue_count, info.queue_priority, queue_family_index) ),
 		properties( physical_device.getProperties() )
 	{
 		const uint32_t loaded_version { context.enumerateInstanceVersion() };
