@@ -25,6 +25,7 @@ set(CMAKE_MAKE_PROGRAM make)
 
 
 find_package(Vulkan REQUIRED)
+include_directories(${Vulkan_INCLUDE_DIRS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #inclusion of project files#
