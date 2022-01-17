@@ -80,7 +80,6 @@ int main() try
 	constexpr vk::DeviceSize outsize = ( elements * elements ) * sizeof( uint32_t );
 	constexpr size_t invocationsPerDispatch = 2;
 	constexpr size_t dispatchNum = elements / invocationsPerDispatch;
-	constexpr size_t totalsize = insize + outsize;
 
 	//TODO: Add some security checks to ensure we are not dispatching too many calls and allocating too much memory
 
@@ -168,36 +167,22 @@ int main() try
 		buffers.at( 0 ).memory.unmapMemory();
 	}
 
-	const auto command_pool { create_command_pool( inst.device, inst.queue_family_index ) };
+	const fgl::vulkan::CommandQueue command(
+		inst,
+		vpipeline,
+		vk::CommandBufferUsageFlagBits::eOneTimeSubmit,
+		dispatchNum,
+		dispatchNum
+	);
 
-	const auto command_buffer { create_command_buffer( inst.device, command_pool ) };
-
-	const vk::CommandBufferBeginInfo bi { vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
-	command_buffer.begin( bi );
-	command_buffer.bindPipeline( vk::PipelineBindPoint::eCompute, *vpipeline.pipeline );
-
-	std::vector<vk::DescriptorSet> array;
-
-
-	for( const auto& tlayout : vpipeline.sets )
-	{
-		array.push_back( *tlayout );
-	}
-
-	command_buffer.bindDescriptorSets( vk::PipelineBindPoint::eCompute, *vpipeline.layout, 0, array, nullptr );
-	command_buffer.dispatch( dispatchNum, dispatchNum, 1 );
-	command_buffer.end();
-
-
-	const auto fence { create_waitable_fence( inst.device, command_buffer, inst.queue_family_index ) };
+	const auto fence { create_waitable_fence( inst.device, command.buffer, inst.queue_family_index ) };
 	constexpr uint64_t timeout { 5 };
 	while( vk::Result::eTimeout == inst.device.waitForFences( { *fence }, VK_TRUE, timeout ) );
 
-	//constexpr vk::DeviceSize out_map_offset { 0 };
-	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
-
 	/// PRINT
-	/*std::cout << "Output Buffer:" << std::endl;
+	/*
+	auto out_buffer_ptr = reinterpret_cast< uint32_t* >( buffers.at( 1 ).get_memory() );
+	std::cout << "Output Buffer:" << std::endl;
 	for( size_t y = 0; y < elements; ++y )// spammy...
 	{
 		for( size_t x = 0; x < elements; ++x )
@@ -206,11 +191,9 @@ int main() try
 			std::cout << std::setw( 5 ) << out_buffer_ptr[index];
 		}
 		std::cout << "\n\n" << std::endl;
-	}*/
-
-	//
-	/// PRINT
+	}
 	buffers.at( 1 ).memory.unmapMemory();
+	//*/
 
 	mainwatch.stop();
 	std::cout << '\n' << mainwatch << std::endl;
