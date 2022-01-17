@@ -22,32 +22,6 @@
 // could use StructureChain, but it would be more verbose?
 // https://github.com/KhronosGroup/Vulkan-Hpp/search?q=StructureChain
 
-auto create_command_pool(
-	const vk::raii::Device& device,
-	const uint32_t queue_family_index )
-{
-	const vk::CommandPoolCreateInfo ci( {}, queue_family_index );
-	return vk::raii::CommandPool( device, ci );
-}
-
-auto createCommandBuffers(
-	const vk::raii::Device& device,
-	const vk::raii::CommandPool& command_pool,
-	const uint32_t buffer_count = 1 )
-{
-	const vk::CommandBufferAllocateInfo alloc_info(
-		*command_pool, vk::CommandBufferLevel::ePrimary, buffer_count
-	);
-	return vk::raii::CommandBuffers( device, alloc_info );
-}
-
-auto create_command_buffer(
-	const vk::raii::Device& device,
-	const vk::raii::CommandPool& command_pool )
-{
-	return std::move( createCommandBuffers( device, command_pool ).front() );
-}
-
 auto create_waitable_fence(
 	const vk::raii::Device& device,
 	const vk::raii::CommandBuffer& command_buffer,
