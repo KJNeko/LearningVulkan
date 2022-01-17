@@ -26,18 +26,9 @@ set(CMAKE_MAKE_PROGRAM make)
 
 find_package(Vulkan REQUIRED)
 
-
-
-#Qt inclusion
-if(WIN32)
-    set(CMAKE_PREFIX_PATH "C:/OpenCV/build")
-endif()
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #inclusion of project files#
 set(SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
-
-
 
 include_directories(${FORMS_DIR})
 include_directories(${INCLUDE_DIR})
