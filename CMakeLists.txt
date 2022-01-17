@@ -82,9 +82,3 @@ target_include_directories(VulkanCompute PRIVATE ${SOURCE_DIR})
 target_include_directories(VulkanCompute PRIVATE ${FLG_DIR})
 
 add_dependencies(VulkanCompute ComputeShader)
-
-#link lib
-target_link_libraries(VulkanCompute ${OpenCV_LIBS})
-
-
-#hydrucxx
