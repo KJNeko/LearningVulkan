@@ -76,6 +76,64 @@ namespace internal {
 
 	/// INFO PRINTING
 
+namespace internal::properties_output {
+
+std::ostream& operator<<(
+	std::ostream& os,
+	const vk::PhysicalDeviceShaderCorePropertiesAMD& prop)
+{
+	return os
+		<< "\n\tShader Engine Count: " << prop.shaderEngineCount
+		<< "\n\tShader Arrays Per Engine Count: " << prop.shaderArraysPerEngineCount
+		<< "\n\tCompute Units Per Shader Array: " << prop.computeUnitsPerShaderArray
+		<< "\n\tSIMD Per Compute Unit: " << prop.simdPerComputeUnit
+		<< "\n\twavefronts Per SIMD: " << prop.wavefrontsPerSimd
+		<< "\n\twavefronts size: " << prop.wavefrontSize;
+}
+
+std::ostream& operator<<(
+	std::ostream& os,
+	const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& prop)
+{
+	return os
+		<< "\n\tShader SM Count " << prop.shaderSMCount
+		<< "\n\tShader Warps Per SM " << prop.shaderWarpsPerSM;
+}
+
+bool has_property(
+	const std::vector<vk::ExtensionProperties>& properties,
+	const std::string& property_name)
+{
+	const auto&& iter {
+		std::find_if(
+			properties.begin(),
+			properties.end(),
+			[&property_name]( vk::ExtensionProperties const& ep )
+			{ return property_name == ep.extensionName; }
+		)
+	};
+	return iter != properties.end();
+}
+
+/* what the literal fuck? why wont this work?!
+template <typename T_property>
+void print_property(const vk::raii::PhysicalDevice& physical_device)
+{
+	using namespace fgl::vulkan::internal::properties::stream_operators;
+
+	// this works
+	//using T = vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV;
+	using T = T_property; // this doesnt
+
+	std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
+}
+*/
+
+#define c_has_templates_that_work(T) \
+	std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
+
+} // namespace internal::properties__output
+
 	void Context::print_debug_info() const
 	{
 		const auto& [loaded_version, target_version]{ version_info };
@@ -101,77 +159,28 @@ namespace internal {
 			vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV
 			vk::PhysicalDeviceShadingRateImagePropertiesNV
 		*/
+
+		using namespace internal::properties_output;
+
 		std::vector<vk::ExtensionProperties> extensionProperties {
 			physical_device.enumerateDeviceExtensionProperties()
 		};
 
-		const std::string amd_properties_name { "VK_AMD_shader_core_properties2" };
-		const bool has_amd_proprties {
-			std::find_if(
-				extensionProperties.begin(),
-				extensionProperties.end(),
-				[&amd_properties_name]( vk::ExtensionProperties const& ep )
-				{
-					return amd_properties_name == ep.extensionName;
-				}
-			)
-			!= extensionProperties.end()
-		};
+		// TODO if we need more of these, correlate string <-> structure?
 
-		if( has_amd_proprties )
+		if( has_property(extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			const auto properties2 {
-				physical_device.getProperties2<
-					vk::PhysicalDeviceProperties2,
-					vk::PhysicalDeviceShaderCorePropertiesAMD
-				>()
-			};
-
-			const vk::PhysicalDeviceShaderCorePropertiesAMD& shaderCoreProperties {
-				properties2.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()
-			};
-
-			std::cout
-				<< "\n\tShader Engine Count: " << shaderCoreProperties.shaderEngineCount
-				<< "\n\tShader Arrays Per Engine Count: " << shaderCoreProperties.shaderArraysPerEngineCount
-				<< "\n\tCompute Units Per Shader Array: " << shaderCoreProperties.computeUnitsPerShaderArray
-				<< "\n\tSIMD Per Compute Unit: " << shaderCoreProperties.simdPerComputeUnit
-				<< "\n\twavefronts Per SIMD: " << shaderCoreProperties.wavefrontsPerSimd;
+			c_has_templates_that_work(vk::PhysicalDeviceShaderCorePropertiesAMD);
+			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
-
-		const std::string nv_properties_name { "VK_NV_shader_sm_builtins" };
-		const bool has_nv_proprties {
-			std::find_if(
-				extensionProperties.begin(),
-				extensionProperties.end(),
-				[&nv_properties_name]( vk::ExtensionProperties const& ep )
-				{
-					return nv_properties_name == ep.extensionName;
-				}
-			)
-			!= extensionProperties.end()
-		};
-
-		if( has_nv_proprties )
+		if( has_property(extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
-			const auto properties2 {
-				physical_device.getProperties2<
-					vk::PhysicalDeviceProperties2,
-					vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV
-				>()
-			};
-
-			const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& shaderCoreProperties {
-				properties2.get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>()
-			};
-
-			std::cout
-				<< "\n\tShader SM Count " << shaderCoreProperties.shaderSMCount
-				<< "\n\tShader Warps Per SM " << shaderCoreProperties.shaderWarpsPerSM;
+			c_has_templates_that_work(vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV);
+			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
-		std::cout << "\n\n\tMax Compute Work Group Sizes: ";
+		std::cout << "\n\tMax Compute Work Group Sizes: ";
 
 		for( uint32_t index { 0 };
 			const auto n : properties.limits.maxComputeWorkGroupSize )
