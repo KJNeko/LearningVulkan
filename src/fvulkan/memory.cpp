@@ -6,12 +6,14 @@
 namespace fgl::vulkan
 {
 	size_t Buffer::bytecount { 0 }; //Static member of Buffer
+
+	namespace internal {
 	//BUFFER
-	vk::raii::Buffer Buffer::create_buffer(
+	vk::raii::Buffer create_buffer(
 		const Context& vulkan,
 		const vk::DeviceSize size,
 		const vk::BufferUsageFlagBits usageflags,
-		const vk::SharingMode sharingmode ) const
+		const vk::SharingMode sharingmode )
 	{
 		constexpr uint32_t number_of_family_indexes { 1 };
 
@@ -28,10 +30,9 @@ namespace fgl::vulkan
 		return vulkan.device.createBuffer( ci );
 	}
 
-	//MEMORY
-	std::pair<uint32_t, vk::DeviceSize> Buffer::get_memory_type(
+	std::pair<uint32_t, vk::DeviceSize> get_memory_type(
 		const vk::PhysicalDeviceMemoryProperties& device_memory_properties,
-		const vk::MemoryPropertyFlags flags ) const
+		const vk::MemoryPropertyFlags flags )
 	{
 		for(
 			uint32_t current_memory_index = 0;
@@ -52,21 +53,26 @@ namespace fgl::vulkan
 		throw std::runtime_error( "Failed to get memory type." );
 	}
 
-	vk::raii::DeviceMemory Buffer::create_device_memory(
+	vk::raii::DeviceMemory create_device_memory(
 		const Context& context,
-		const vk::MemoryPropertyFlags flags ) const
+		const vk::raii::Buffer& buffer,
+		const vk::DeviceSize bytesize,
+		const vk::MemoryPropertyFlags flags )
 	{
-		const auto [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
+		const auto& [memindex, size] { get_memory_type( context.physical_device.getMemoryProperties(), flags ) };
+
+		auto& bytecount{ Buffer::bytecount };
 
 		bytecount += buffer.getMemoryRequirements().size;
 		if( context.physical_device.getMemoryProperties().memoryHeaps[1].size < bytecount )
 		{
 			std::stringstream ss;
-			ss << "Attempting to allocate too much memory (in Byte)\n";
-			ss << "\tMemory allocated: " << bytesize << "\n";
-			ss << "\tMaximum Memory: " << context.physical_device.getMemoryProperties().memoryHeaps[1].size << "\n";
-			ss << "\tMemory avalilable: " << context.properties.limits.maxMemoryAllocationCount - ( bytecount - bytesize ) << "\n";
-			ss << "\tMemory Over: " << bytecount - context.physical_device.getMemoryProperties().memoryHeaps[1].size - ( bytecount - bytesize ) << "\n";
+			ss
+				<< "Attempting to allocate too much memory (in Byte)\n"
+				<< "\tMemory allocated: " << bytesize << "\n"
+				<< "\tMaximum Memory: " << context.physical_device.getMemoryProperties().memoryHeaps[1].size << "\n"
+				<< "\tMemory avalilable: " << context.properties.limits.maxMemoryAllocationCount - ( bytecount - bytesize ) << "\n"
+				<< "\tMemory Over: " << bytecount - context.physical_device.getMemoryProperties().memoryHeaps[1].size - ( bytecount - bytesize ) << "\n";
 
 			throw std::runtime_error( ss.str() );
 		}
@@ -76,9 +82,35 @@ namespace fgl::vulkan
 		return context.device.allocateMemory( memInfo );
 	}
 
+	} // namespace internal
+
+
+	Buffer::Buffer(
+		const Context& context,
+		const vk::DeviceSize& size,
+		const vk::BufferUsageFlagBits usageflags,
+		const vk::SharingMode sharingmode,
+		const uint32_t binding_,
+		const vk::MemoryPropertyFlags flags,
+		const vk::DescriptorType type )
+	:
+		binding( binding_ ),
+		buffer_type( type ),
+		bytesize( size ),
+		buffer( internal::create_buffer( context, size, usageflags, sharingmode ) ),
+		memory( internal::create_device_memory( context, buffer, bytesize, flags ) )
+	{
+		constexpr vk::DeviceSize offset { 0 };
+		buffer.bindMemory( *memory, offset );
+		std::cout
+			<< "\n\tAllocated " << size << " bytes to binding: " << binding_
+			<< std::endl;
+	}
+
 	void* Buffer::get_memory() const
 	{
-		return memory.mapMemory( 0, bytesize );
+		constexpr vk::DeviceSize offset { 0 };
+		return memory.mapMemory( offset, bytesize );
 	}
 
 }

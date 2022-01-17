@@ -198,6 +198,6 @@ void print_property(const vk::raii::PhysicalDevice& physical_device)
 		std::cout
 			<< "\n\tMax Compute Inovactions: "
 			<< properties.limits.maxComputeWorkGroupInvocations
-			<< "\n\n" << std::endl;
+			<< std::endl;
 	}
 }
