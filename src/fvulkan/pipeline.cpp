@@ -14,8 +14,7 @@ namespace fgl::vulkan
 		const Context& cntx,
 		const std::filesystem::path path ) const
 	{
-		/// TODO replace with fgl read binary file
-		auto buff = fgl::read_binary_file( path );
+		const auto buff{ fgl::read_binary_file( path ) };
 
 		/// TODO guarentee alignment
 		// assert vector memory meets allignment requirements of uint32_t
@@ -26,7 +25,7 @@ namespace fgl::vulkan
 			buff.size(),
 			reinterpret_cast< const uint32_t* >( // TODO ASSURE ALIGNMENT
 				reinterpret_cast< const void* >( buff.data() )
-				)
+			)
 		);
 		return vk::raii::ShaderModule( cntx.device, ci );
 	}
@@ -56,7 +55,6 @@ namespace fgl::vulkan
 			cntx.device.createPipelineCache( vk::PipelineCacheCreateInfo() ),
 			ci
 		);
-
 	}
 
 	vk::raii::DescriptorSets Pipeline::create_descriptor_sets( const Context& cntx ) const
@@ -64,9 +62,6 @@ namespace fgl::vulkan
 		const vk::DescriptorSetAllocateInfo alloc_info( *pool, *descriptor_set_layouts );
 		return vk::raii::DescriptorSets( cntx.device, alloc_info );
 	}
-
-
-
 }
 
 
