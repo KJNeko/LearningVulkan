@@ -172,14 +172,12 @@ namespace fgl::vulkan
 			return iter != properties.end();
 		}
 
-		/* what the literal fuck? why wont this work?!
 		template <typename T_property>
 		void print_property(const auto& physical_device_properties)
 		{
 			using namespace fgl::vulkan::internal::properties_output;
-			//std::cout << (physical_device_properties.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()) << '\n';
+			std::cout << (physical_device_properties.template get<T_property>()) << '\n';
 		}
-		//*/
 	} // namespace internal::properties_output
 
 	void Context::print_debug_info() const
@@ -216,34 +214,29 @@ namespace fgl::vulkan
 			>()
 		};
 
-		// TODO if we need more of these, correlate string <-> structure?
-
-		#define c_has_templates_that_work(T) \
-			std::cout << physical_device_properties.get<T>() << '\n';
-
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			c_has_templates_that_work( vk::PhysicalDeviceShaderCorePropertiesAMD );
+			print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device_properties);
 		}
 
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			c_has_templates_that_work( vk::PhysicalDeviceShaderCoreProperties2AMD );
+			print_property<vk::PhysicalDeviceShaderCoreProperties2AMD>(physical_device_properties);
 		}
 
 		if( has_property( extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
-			c_has_templates_that_work( vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV );
+			print_property<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>(physical_device_properties);
 		}
 
 		if( has_property( extensionProperties, "VK_NV_shading_rate_image" ) )
 		{
-			c_has_templates_that_work( vk::PhysicalDeviceShadingRateImagePropertiesNV );
+			print_property<vk::PhysicalDeviceShadingRateImagePropertiesNV>(physical_device_properties);
 		}
 
 		if( has_property( extensionProperties, "VK_EXT_pci_bus_info" ) )
 		{
-			c_has_templates_that_work( vk::PhysicalDevicePCIBusInfoPropertiesEXT );
+			print_property<vk::PhysicalDevicePCIBusInfoPropertiesEXT>(physical_device_properties);
 		}
 
 		std::cout << "\n\tMax Compute Work Group Sizes: ";
