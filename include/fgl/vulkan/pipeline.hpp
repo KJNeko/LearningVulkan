@@ -26,7 +26,7 @@ namespace fgl::vulkan
 		) const;
 
 		template <std::ranges::forward_range T>
-		requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
+			requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
 		[[nodiscard]] vk::raii::DescriptorSetLayout create_descriptor_set_layout(
 			const Context& cntx,
 			const T& buffers )
@@ -34,7 +34,7 @@ namespace fgl::vulkan
 			std::vector<vk::DescriptorSetLayoutBinding> setBindings;
 			for( const auto& buffer : buffers )
 			{
-				constexpr uint32_t descriptor_count{ 1 };
+				constexpr uint32_t descriptor_count { 1 };
 				setBindings.emplace_back(
 					buffer.binding,
 					buffer.buffer_type,
@@ -44,23 +44,23 @@ namespace fgl::vulkan
 			}
 			const vk::DescriptorSetLayoutCreateInfo ci(
 				{},
-				static_cast<uint32_t>(setBindings.size()),
+				static_cast< uint32_t >( setBindings.size() ),
 				setBindings.data()
 			);
 			return vk::raii::DescriptorSetLayout( cntx.device, ci );
 		}
 
 		template <std::ranges::forward_range T>
-		requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
+			requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
 		[[nodiscard]] vk::raii::DescriptorPool create_descriptor_pool(
 			const Context& cntx,
 			const T& buffers ) const
 		{
-			constexpr uint32_t max_sets{ 1 };
-			constexpr uint32_t pool_size_count{ 1 };
+			constexpr uint32_t max_sets { 1 };
+			constexpr uint32_t pool_size_count { 1 };
 			const vk::DescriptorPoolSize poolsize {
-				std::ranges::begin(buffers)->buffer_type,
-				static_cast< uint32_t >( std::ranges::size(buffers) )
+				std::ranges::begin( buffers )->buffer_type,
+				static_cast< uint32_t >( std::ranges::size( buffers ) )
 			};
 			const vk::DescriptorPoolCreateInfo ci(
 				vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
@@ -94,14 +94,14 @@ namespace fgl::vulkan
 		Pipeline() = delete;
 
 		template <std::ranges::forward_range T>
-		requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
+			requires std::same_as<std::ranges::range_value_t<T>, fgl::vulkan::Buffer>
 		[[nodiscard]] explicit
-		Pipeline(
-			const Context& cntx,
-			const std::filesystem::path& shaderpath,
-			const std::string& shader_init_name,
-			const T& buffers )
-		:
+			Pipeline(
+				const Context& cntx,
+				const std::filesystem::path& shaderpath,
+				const std::string& shader_init_name,
+				const T& buffers )
+			:
 			shader_module( create_shader_module( cntx, shaderpath ) ),
 			descriptor_set_layouts( create_descriptor_set_layout( cntx, buffers ) ),
 			pool( create_descriptor_pool( cntx, buffers ) ),
@@ -112,22 +112,22 @@ namespace fgl::vulkan
 			std::vector<vk::WriteDescriptorSet> writeset;
 			std::vector<vk::DescriptorBufferInfo> bufferinfo;
 
-			const auto number_of_buffers{ std::ranges::size(buffers) };
+			const auto number_of_buffers { std::ranges::size( buffers ) };
 			writeset.resize( number_of_buffers );
 			bufferinfo.resize( number_of_buffers );
 
 			/// magic values
 			constexpr uint32_t offset { 0 };
 			constexpr vk::DescriptorImageInfo* imgpointer { nullptr };
-			constexpr uint32_t array_element{ 0 };
-			constexpr uint32_t descriptor_count{ 1 };
+			constexpr uint32_t array_element { 0 };
+			constexpr uint32_t descriptor_count { 1 };
 
 			/* Simultaneously iterate over buffers, bufferinfo, and writeset.
 				Constructs and assigns elements which are associated by order.
 				Both writeset and info are constructed from a buffer.
 				writeset requires the info's address.*/
-			for (const auto& [buffer, buffer_info, write_set]
-				: fgl::zip(buffers, bufferinfo, writeset))
+			for( const auto& [buffer, buffer_info, write_set]
+				: fgl::zip( buffers, bufferinfo, writeset ) )
 			{
 				buffer_info = vk::DescriptorBufferInfo(
 					*buffer.buffer, offset, buffer.bytesize

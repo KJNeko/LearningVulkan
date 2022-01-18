@@ -115,7 +115,7 @@ int main() try
 	fgl::vulkan::Pipeline vpipeline( inst, std::filesystem::path( "Square.spv" ), std::string( "main" ), buffers );
 
 	{
-		auto& fglbuffer{ buffers.at( 0 ) };
+		auto& fglbuffer { buffers.at( 0 ) };
 
 		uint32_t* const in_buffer_data {
 				reinterpret_cast< uint32_t* > ( fglbuffer.get_memory() )
@@ -123,9 +123,9 @@ int main() try
 
 		in_buffer_data[0] = elements; // matrix size
 
-		auto matrix{ fgl::make_range(&in_buffer_data[1], elements) };
+		auto matrix { fgl::make_range( &in_buffer_data[1], elements ) };
 
-		for(uint32_t i{ 0 }; auto& element : matrix)
+		for( uint32_t i { 0 }; auto & element : matrix )
 		{
 			element = i++;
 		}

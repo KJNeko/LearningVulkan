@@ -9,8 +9,7 @@
 #include "./internal/version.hpp"
 
 
-namespace fgl::vulkan
-{
+namespace fgl::vulkan {
 
 	struct AppInfo
 	{
@@ -33,7 +32,7 @@ namespace fgl::vulkan
 		const internal::VersionInfo version_info;
 
 		[[nodiscard]]
-		uint32_t index_of_first_queue_family(const vk::QueueFlagBits flag ) const;
+		uint32_t index_of_first_queue_family( const vk::QueueFlagBits flag ) const;
 
 		[[nodiscard]] explicit Context( const AppInfo& info );
 

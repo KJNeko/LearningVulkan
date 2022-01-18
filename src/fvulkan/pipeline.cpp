@@ -14,7 +14,7 @@ namespace fgl::vulkan
 		const Context& cntx,
 		const std::filesystem::path path ) const
 	{
-		const auto buff{ fgl::read_binary_file( path ) };
+		const auto buff { fgl::read_binary_file( path ) };
 
 		/// TODO guarentee alignment
 		// assert vector memory meets allignment requirements of uint32_t
@@ -24,8 +24,8 @@ namespace fgl::vulkan
 			vk::ShaderModuleCreateFlags(),
 			buff.size(),
 			reinterpret_cast< const uint32_t* >( // TODO ASSURE ALIGNMENT
-				reinterpret_cast< const void* >( buff.data() )
-			)
+			reinterpret_cast< const void* >( buff.data() )
+		)
 		);
 		return vk::raii::ShaderModule( cntx.device, ci );
 	}

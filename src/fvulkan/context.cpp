@@ -4,7 +4,7 @@
 
 namespace fgl::vulkan
 {
-	uint32_t Context::index_of_first_queue_family(const vk::QueueFlagBits flag ) const
+	uint32_t Context::index_of_first_queue_family( const vk::QueueFlagBits flag ) const
 	{
 		const auto has_flag {
 			[flag]( const vk::QueueFamilyProperties& qfp ) noexcept -> bool
@@ -28,115 +28,119 @@ namespace fgl::vulkan
 		);
 	}
 
-namespace internal {
-	vk::raii::Instance create_instance(
-		const vk::raii::Context& context,
-		const AppInfo& info )
+	namespace internal
 	{
-		const vk::ApplicationInfo appInfo(
-			"VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion
-		);
-		vk::InstanceCreateInfo ci(
-			vk::InstanceCreateFlags {}, &appInfo,
-			static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
-			static_cast< uint32_t >( info.extentions.size() ), info.extentions.data()
-		);
-		return vk::raii::Instance( context, ci );
-	}
+		vk::raii::Instance create_instance(
+			const vk::raii::Context& context,
+			const AppInfo& info )
+		{
+			const vk::ApplicationInfo appInfo(
+				"VulkanCompute", 0, "ComputeEngine", 0, info.apiVersion
+			);
+			vk::InstanceCreateInfo ci(
+				vk::InstanceCreateFlags {}, &appInfo,
+				static_cast< uint32_t >( info.layer.size() ), info.layer.data(),
+				static_cast< uint32_t >( info.extentions.size() ), info.extentions.data()
+			);
+			return vk::raii::Instance( context, ci );
+		}
 
-	vk::raii::Device create_device(
-		const vk::raii::PhysicalDevice& physical_device,
-		const uint32_t queue_count,
-		const float queue_priority,
-		const uint32_t queue_family_index)
-	{
-		const vk::DeviceQueueCreateInfo device_queue_ci(
-			{}, queue_family_index, queue_count, &queue_priority
-		);
+		vk::raii::Device create_device(
+			const vk::raii::PhysicalDevice& physical_device,
+			const uint32_t queue_count,
+			const float queue_priority,
+			const uint32_t queue_family_index )
+		{
+			const vk::DeviceQueueCreateInfo device_queue_ci(
+				{}, queue_family_index, queue_count, &queue_priority
+			);
 
-		std::vector<const char*> layers;
-		std::vector<const char*> extentions { };
+			std::vector<const char*> layers;
+			std::vector<const char*> extentions { };
 
-		const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
+			const vk::DeviceCreateInfo device_ci( {}, device_queue_ci, layers, extentions );
 
-		return vk::raii::Device( physical_device, device_ci );
-	}
-} // namespace internal
+			return vk::raii::Device( physical_device, device_ci );
+		}
+	} // namespace internal
 
 	Context::Context( const AppInfo& info )
-	:
-		context{},
+		:
+		context {},
 		instance( internal::create_instance( context, info ) ),
 		physical_device( std::move( vk::raii::PhysicalDevices( instance ).front() ) ),
 		queue_family_index( index_of_first_queue_family( vk::QueueFlagBits::eCompute ) ),
-		device( internal::create_device(physical_device, info.queue_count, info.queue_priority, queue_family_index) ),
+		device( internal::create_device( physical_device, info.queue_count, info.queue_priority, queue_family_index ) ),
 		properties( physical_device.getProperties() ),
-		version_info(context.enumerateInstanceVersion(), info.apiVersion)
+		version_info( context.enumerateInstanceVersion(), info.apiVersion )
 	{}
 
 	/// INFO PRINTING
 
-namespace internal::properties_output {
+	namespace internal::properties_output
+	{
 
-std::ostream& operator<<(
-	std::ostream& os,
-	const vk::PhysicalDeviceShaderCorePropertiesAMD& prop)
-{
-	return os
-		<< "\n\tShader Engine Count: " << prop.shaderEngineCount
-		<< "\n\tShader Arrays Per Engine Count: " << prop.shaderArraysPerEngineCount
-		<< "\n\tCompute Units Per Shader Array: " << prop.computeUnitsPerShaderArray
-		<< "\n\tSIMD Per Compute Unit: " << prop.simdPerComputeUnit
-		<< "\n\twavefronts Per SIMD: " << prop.wavefrontsPerSimd
-		<< "\n\twavefronts size: " << prop.wavefrontSize;
+		std::ostream& operator<<(
+			std::ostream& os,
+			const vk::PhysicalDeviceShaderCorePropertiesAMD& prop )
+		{
+			return os
+				<< "\n\tShader Engine Count: " << prop.shaderEngineCount
+				<< "\n\tShader Arrays Per Engine Count: " << prop.shaderArraysPerEngineCount
+				<< "\n\tCompute Units Per Shader Array: " << prop.computeUnitsPerShaderArray
+				<< "\n\tSIMD Per Compute Unit: " << prop.simdPerComputeUnit
+				<< "\n\twavefronts Per SIMD: " << prop.wavefrontsPerSimd
+				<< "\n\twavefronts size: " << prop.wavefrontSize;
+		}
+
+		std::ostream& operator<<(
+			std::ostream& os,
+			const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& prop )
+		{
+			return os
+				<< "\n\tShader SM Count " << prop.shaderSMCount
+				<< "\n\tShader Warps Per SM " << prop.shaderWarpsPerSM;
+		}
+
+		bool has_property(
+			const std::vector<vk::ExtensionProperties>& properties,
+			const std::string& property_name )
+		{
+			const auto&& iter {
+				std::find_if(
+					properties.begin(),
+					properties.end(),
+					[&property_name]( vk::ExtensionProperties const& ep )
+					{
+		 return property_name == ep.extensionName;
 }
+)
+			};
+			return iter != properties.end();
+		}
 
-std::ostream& operator<<(
-	std::ostream& os,
-	const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& prop)
-{
-	return os
-		<< "\n\tShader SM Count " << prop.shaderSMCount
-		<< "\n\tShader Warps Per SM " << prop.shaderWarpsPerSM;
-}
+		/* what the literal fuck? why wont this work?!
+		template <typename T_property>
+		void print_property(const vk::raii::PhysicalDevice& physical_device)
+		{
+			using namespace fgl::vulkan::internal::properties::stream_operators;
 
-bool has_property(
-	const std::vector<vk::ExtensionProperties>& properties,
-	const std::string& property_name)
-{
-	const auto&& iter {
-		std::find_if(
-			properties.begin(),
-			properties.end(),
-			[&property_name]( vk::ExtensionProperties const& ep )
-			{ return property_name == ep.extensionName; }
-		)
-	};
-	return iter != properties.end();
-}
+			// this works
+			//using T = vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV;
+			using T = T_property; // this doesnt
 
-/* what the literal fuck? why wont this work?!
-template <typename T_property>
-void print_property(const vk::raii::PhysicalDevice& physical_device)
-{
-	using namespace fgl::vulkan::internal::properties::stream_operators;
+			std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
+		}
+		*/
 
-	// this works
-	//using T = vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV;
-	using T = T_property; // this doesnt
-
+		#define c_has_templates_that_work(T) \
 	std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
-}
-*/
 
-#define c_has_templates_that_work(T) \
-	std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
-
-} // namespace internal::properties__output
+	} // namespace internal::properties__output
 
 	void Context::print_debug_info() const
 	{
-		const auto& [loaded_version, target_version]{ version_info };
+		const auto& [loaded_version, target_version] { version_info };
 		const internal::Version device_version( properties.apiVersion );
 
 		std::cout
@@ -168,15 +172,15 @@ void print_property(const vk::raii::PhysicalDevice& physical_device)
 
 		// TODO if we need more of these, correlate string <-> structure?
 
-		if( has_property(extensionProperties, "VK_AMD_shader_core_properties2" ) )
+		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			c_has_templates_that_work(vk::PhysicalDeviceShaderCorePropertiesAMD);
+			c_has_templates_that_work( vk::PhysicalDeviceShaderCorePropertiesAMD );
 			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
-		if( has_property(extensionProperties, "VK_NV_shader_sm_builtins" ) )
+		if( has_property( extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
-			c_has_templates_that_work(vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV);
+			c_has_templates_that_work( vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV );
 			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
