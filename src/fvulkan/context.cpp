@@ -174,22 +174,13 @@ namespace fgl::vulkan
 
 		/* what the literal fuck? why wont this work?!
 		template <typename T_property>
-		void print_property(const vk::raii::PhysicalDevice& physical_device)
+		void print_property(const auto& physical_device_properties)
 		{
-			using namespace fgl::vulkan::internal::properties::stream_operators;
-
-			// this works
-			//using T = vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV;
-			using T = T_property; // this doesnt
-
-			std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
+			using namespace fgl::vulkan::internal::properties_output;
+			//std::cout << (physical_device_properties.get<vk::PhysicalDeviceShaderCorePropertiesAMD>()) << '\n';
 		}
-		*/
-
-		#define c_has_templates_that_work(T) \
-			std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
-
-	} // namespace internal::properties__output
+		//*/
+	} // namespace internal::properties_output
 
 	void Context::print_debug_info() const
 	{
@@ -213,12 +204,26 @@ namespace fgl::vulkan
 			physical_device.enumerateDeviceExtensionProperties()
 		};
 
+		const auto& physical_device_properties{
+			physical_device.getProperties2
+			<
+				vk::PhysicalDeviceProperties2,
+				vk::PhysicalDeviceShaderCorePropertiesAMD,
+				vk::PhysicalDeviceShaderCoreProperties2AMD,
+				vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV,
+				vk::PhysicalDeviceShadingRateImagePropertiesNV,
+				vk::PhysicalDevicePCIBusInfoPropertiesEXT
+			>()
+		};
+
 		// TODO if we need more of these, correlate string <-> structure?
+
+		#define c_has_templates_that_work(T) \
+			std::cout << physical_device_properties.get<T>() << '\n';
 
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
 			c_has_templates_that_work( vk::PhysicalDeviceShaderCorePropertiesAMD );
-			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
@@ -229,7 +234,6 @@ namespace fgl::vulkan
 		if( has_property( extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
 			c_has_templates_that_work( vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV );
-			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
 		if( has_property( extensionProperties, "VK_NV_shading_rate_image" ) )
