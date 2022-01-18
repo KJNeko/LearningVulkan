@@ -123,8 +123,8 @@ namespace fgl::vulkan
 		{
 			return os
 				<< "\n\tShader SM Builtins Properties [NVIDIA]:"
-				<< "\n\t\tShader SM Count " << prop.shaderSMCount
-				<< "\n\t\tShader Warps Per SM " << prop.shaderWarpsPerSM;
+				<< "\n\t\tShader SM Count: " << prop.shaderSMCount
+				<< "\n\t\tShader Warps Per SM: " << prop.shaderWarpsPerSM;
 		}
 
 		std::ostream& operator<<(
