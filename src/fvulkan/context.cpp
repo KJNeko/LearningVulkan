@@ -88,8 +88,8 @@ namespace fgl::vulkan
 		{
 			return os
 				<< "\n\tShader Core Properties 2 [AMD]:"
-				<< "\n\t\tActive Compute Unit Count: " << prop.activeComputeUnitCount;
-			//<< "\n\t\tShader Core Features: " << prop.shaderCoreFeatures;
+				<< "\n\t\tActive Compute Unit Count: " << prop.activeComputeUnitCount
+				<< "\n\t\tShader Core Features: " << vk::to_string( prop.shaderCoreFeatures );
 		}
 
 		std::ostream& operator<<(
