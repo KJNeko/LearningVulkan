@@ -80,27 +80,80 @@ namespace fgl::vulkan
 	namespace internal::properties_output
 	{
 
+		//AMD
+		std::ostream& operator<<(
+			std::ostream& os,
+			const vk::PhysicalDeviceShaderCoreProperties2AMD& prop
+			)
+		{
+			return os
+				<< "\n\tShader Core Properties 2 [AMD]:"
+				<< "\n\t\tActive Compute Unit Count: " << prop.activeComputeUnitCount;
+			//<< "\n\t\tShader Core Features: " << prop.shaderCoreFeatures;
+		}
+
 		std::ostream& operator<<(
 			std::ostream& os,
 			const vk::PhysicalDeviceShaderCorePropertiesAMD& prop )
 		{
 			return os
-				<< "\n\tShader Engine Count: " << prop.shaderEngineCount
-				<< "\n\tShader Arrays Per Engine Count: " << prop.shaderArraysPerEngineCount
-				<< "\n\tCompute Units Per Shader Array: " << prop.computeUnitsPerShaderArray
-				<< "\n\tSIMD Per Compute Unit: " << prop.simdPerComputeUnit
-				<< "\n\twavefronts Per SIMD: " << prop.wavefrontsPerSimd
-				<< "\n\twavefronts size: " << prop.wavefrontSize;
+				<< "\n\tShader Core Properties [AMD]:"
+				<< "\n\t\tShader Engine Count: " << prop.shaderEngineCount
+				<< "\n\t\tShader Arrays Per Engine Count: " << prop.shaderArraysPerEngineCount
+				<< "\n\t\tCompute Units Per Shader Array: " << prop.computeUnitsPerShaderArray
+				<< "\n\t\tSIMD Per Compute Unit: " << prop.simdPerComputeUnit
+				<< "\n\t\tWavefronts Per SIMD: " << prop.wavefrontsPerSimd
+				<< "\n\t\tWavefronts size: " << prop.wavefrontSize
+				<< "\n\n\t\tSgpr Allocation: [MIN]=" << prop.minSgprAllocation
+				<< " [MAX]=" << prop.maxSgprAllocation
+				<< "\n\t\tSgpr Allocation Granularity: " << prop.sgprAllocationGranularity
+				<< "\n\t\tSpgrs Per SIMD: " << prop.sgprsPerSimd
+				<< "\n\n\t\tVgpr Allocation: [MIN]=" << prop.minVgprAllocation
+				<< " [MIN]=" << prop.maxVgprAllocation
+				<< "\n\t\tVgpr Allocation Granularity: " << prop.vgprAllocationGranularity
+				<< "\n\t\tVgprs Per SIMD: " << prop.vgprsPerSimd;
+
 		}
 
+
+		//NVIDIA
 		std::ostream& operator<<(
 			std::ostream& os,
 			const vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV& prop )
 		{
 			return os
-				<< "\n\tShader SM Count " << prop.shaderSMCount
-				<< "\n\tShader Warps Per SM " << prop.shaderWarpsPerSM;
+				<< "\n\tShader SM Builtins Properties [NVIDIA]:"
+				<< "\n\t\tShader SM Count " << prop.shaderSMCount
+				<< "\n\t\tShader Warps Per SM " << prop.shaderWarpsPerSM;
 		}
+
+		std::ostream& operator<<(
+			std::ostream& os,
+			const vk::PhysicalDeviceShadingRateImagePropertiesNV& prop )
+		{
+			return os
+				<< "\n\tShader Rate Image Properties [NVIDIA]:"
+				<< "\n\t\tShading Rate Max Coarse Samples: " << prop.shadingRateMaxCoarseSamples
+				<< "\n\t\tShading Rate Palette Size: " << prop.shadingRatePaletteSize
+				<< "\n\t\tShading Rate Palette Size: " << "[x]=" << prop.shadingRateTexelSize.width
+				<< " [y]=" << prop.shadingRateTexelSize.height;
+		}
+
+
+		//EXT
+		std::ostream& operator<<(
+			std::ostream& os,
+			const vk::PhysicalDevicePCIBusInfoPropertiesEXT& prop )
+		{
+			return os
+				<< "\n\tPCI Bus Info Properties:"
+				<< "\n\t\tPCI Domain: " << prop.pciDomain
+				<< "\n\t\tPCI Bus: " << prop.pciBus
+				<< "\n\t\tPCI Device: " << prop.pciDevice
+				<< "\n\t\tPCI Function: " << prop.pciFunction;
+		}
+
+
 
 		bool has_property(
 			const std::vector<vk::ExtensionProperties>& properties,
@@ -154,16 +207,6 @@ namespace fgl::vulkan
 			<< queue_family_index
 			<< std::endl;
 
-		//Checking if we are an AMD gpu
-		//FUCK NVIDIA WHY DONT YOU HAVE THIS!?!?!??!!?
-		/* what about...
-			vk::PhysicalDeviceCooperativeMatrixPropertiesNV
-			vk::PhysicalDeviceMeshShaderPropertiesNV
-			vk::PhysicalDeviceRayTracingPropertiesNV
-			vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV
-			vk::PhysicalDeviceShadingRateImagePropertiesNV
-		*/
-
 		using namespace internal::properties_output;
 
 		std::vector<vk::ExtensionProperties> extensionProperties {
@@ -178,10 +221,25 @@ namespace fgl::vulkan
 			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
 		}
 
+		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
+		{
+			c_has_templates_that_work( vk::PhysicalDeviceShaderCoreProperties2AMD );
+		}
+
 		if( has_property( extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
 			c_has_templates_that_work( vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV );
 			//print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device);
+		}
+
+		if( has_property( extensionProperties, "VK_NV_shading_rate_image" ) )
+		{
+			c_has_templates_that_work( vk::PhysicalDeviceShadingRateImagePropertiesNV );
+		}
+
+		if( has_property( extensionProperties, "VK_EXT_pci_bus_info" ) )
+		{
+			c_has_templates_that_work( vk::PhysicalDevicePCIBusInfoPropertiesEXT );
 		}
 
 		std::cout << "\n\tMax Compute Work Group Sizes: ";
