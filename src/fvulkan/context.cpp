@@ -165,9 +165,9 @@ namespace fgl::vulkan
 					properties.end(),
 					[&property_name]( vk::ExtensionProperties const& ep )
 					{
-		 return property_name == ep.extensionName;
-}
-)
+						return property_name == ep.extensionName;
+					}
+				)
 			};
 			return iter != properties.end();
 		}
@@ -187,7 +187,7 @@ namespace fgl::vulkan
 		*/
 
 		#define c_has_templates_that_work(T) \
-	std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
+			std::cout << physical_device.getProperties2<vk::PhysicalDeviceProperties2, T>().get<T>() << '\n';
 
 	} // namespace internal::properties__output
 
