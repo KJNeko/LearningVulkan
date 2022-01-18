@@ -173,10 +173,10 @@ namespace fgl::vulkan
 		}
 
 		template <typename T_property>
-		void print_property(const auto& physical_device_properties)
+		void print_property( const auto& physical_device_properties )
 		{
 			using namespace fgl::vulkan::internal::properties_output;
-			std::cout << (physical_device_properties.template get<T_property>()) << '\n';
+			std::cout << ( physical_device_properties.template get<T_property>() ) << '\n';
 		}
 	} // namespace internal::properties_output
 
@@ -202,7 +202,7 @@ namespace fgl::vulkan
 			physical_device.enumerateDeviceExtensionProperties()
 		};
 
-		const auto& physical_device_properties{
+		const auto& physical_device_properties {
 			physical_device.getProperties2
 			<
 				vk::PhysicalDeviceProperties2,
@@ -216,27 +216,27 @@ namespace fgl::vulkan
 
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>(physical_device_properties);
+			print_property<vk::PhysicalDeviceShaderCorePropertiesAMD>( physical_device_properties );
 		}
 
 		if( has_property( extensionProperties, "VK_AMD_shader_core_properties2" ) )
 		{
-			print_property<vk::PhysicalDeviceShaderCoreProperties2AMD>(physical_device_properties);
+			print_property<vk::PhysicalDeviceShaderCoreProperties2AMD>( physical_device_properties );
 		}
 
 		if( has_property( extensionProperties, "VK_NV_shader_sm_builtins" ) )
 		{
-			print_property<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>(physical_device_properties);
+			print_property<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>( physical_device_properties );
 		}
 
 		if( has_property( extensionProperties, "VK_NV_shading_rate_image" ) )
 		{
-			print_property<vk::PhysicalDeviceShadingRateImagePropertiesNV>(physical_device_properties);
+			print_property<vk::PhysicalDeviceShadingRateImagePropertiesNV>( physical_device_properties );
 		}
 
 		if( has_property( extensionProperties, "VK_EXT_pci_bus_info" ) )
 		{
-			print_property<vk::PhysicalDevicePCIBusInfoPropertiesEXT>(physical_device_properties);
+			print_property<vk::PhysicalDevicePCIBusInfoPropertiesEXT>( physical_device_properties );
 		}
 
 		std::cout << "\n\tMax Compute Work Group Sizes: ";
