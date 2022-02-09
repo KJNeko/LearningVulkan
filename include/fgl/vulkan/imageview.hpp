@@ -17,6 +17,18 @@ class ImageViews
 
 	ImageViews() = delete;
 
+	operator std::vector<VkImageView>()
+	{
+		return swapChainImageViews;
+	}
+
+
+  public:
+	VkImageView& operator[]( std::size_t i )
+	{
+		return swapChainImageViews[ i ];
+	}
+
 	ImageViews( fgl::vulkan::Swapchain& swapchain, fgl::vulkan::Device& device )
 		: parentDevice( device )
 	{

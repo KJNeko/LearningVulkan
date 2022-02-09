@@ -58,8 +58,6 @@ add_custom_command(
     COMMENT "Buiding Shaders"
 )
 
-add_custom_target(ComputeShader DEPENDS "${CMAKE_SOURCE_DIR}/Square.spv")
-
 file(GLOB_RECURSE SOURCES
     "${SOURCE_DIR}/*.cpp"
     "${SOURCE_DIR}/*.hlsl"
@@ -78,5 +76,3 @@ endif()
 
 target_include_directories(VulkanCompute PRIVATE ${INCLUDE_DIR})
 target_include_directories(VulkanCompute PRIVATE ${SOURCE_DIR})
-
-add_dependencies(VulkanCompute ComputeShader)

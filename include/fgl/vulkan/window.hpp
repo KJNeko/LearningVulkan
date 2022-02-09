@@ -1,20 +1,13 @@
 #ifndef F6EB9FA4_E75A_4869_9036_C6BFAE2F5345
 #define F6EB9FA4_E75A_4869_9036_C6BFAE2F5345
 
-#include <vulkan/vulkan.h>
-
-#include "stopwatch.hpp"
-
-#include <fgl/vulkan.hpp>
-
-
-// GLFW
-#include <GLFW/glfw3.h>
-
 #include "./fgl/vulkan/debug.hpp"
 #include "./fgl/vulkan/instance.hpp"
 #include "./fgl/vulkan/physicaldevice.hpp"
 #include "./fgl/vulkan/surface.hpp"
+#include <GLFW/glfw3.h>
+#include <fgl/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 
 void error_callback( int code, const char* description )

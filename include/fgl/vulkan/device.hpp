@@ -23,6 +23,7 @@ class Device
 	fgl::vulkan::Queue deviceQueue;
 	fgl::vulkan::Queue presentQueue;
 
+  public:
 	fgl::vulkan::Swapchain swapChain;
 
 	Device() = delete;
@@ -30,6 +31,7 @@ class Device
 	Device( Device const& rhs ) = delete;
 	Device& operator=( Device const& rhs ) = delete;
 
+  private:
 	template <std::ranges::forward_range T>
 	requires std::same_as<const char*, std::ranges::range_value_t<T>>
 		VkDevice createDevice(

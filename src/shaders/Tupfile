@@ -1,0 +1,9 @@
+
+
+
+
+: foreach *.frag |> glslc %f -o %o |> %B.frag.spv
+: foreach *.vert |> glslc %f -o %o |> %B.vert.spv
+
+
+
