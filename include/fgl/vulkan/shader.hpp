@@ -12,7 +12,7 @@ namespace internal
 	{
 		if ( !std::filesystem::exists( path ) )
 		{
-			throw std::runtime_error( "Failed to find the file" );
+			throw std::runtime_error( "fgl::vulkan::internal::readFile() ERROR: Failed to find the file. \n\t\tFilepath:" + path.string() );
 		}
 		if ( std::ifstream ifs( path, std::ios::ate | std::ios::binary ); ifs )
 		{
