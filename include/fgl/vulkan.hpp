@@ -7,6 +7,7 @@
 #include "./vulkan/instance.hpp"
 #include "./vulkan/physicaldevice.hpp"
 #include "./vulkan/pipeline.hpp"
+#include "./vulkan/pipelineinfo.hpp"
 #include "./vulkan/queue.hpp"
 #include "./vulkan/shader.hpp"
 #include "./vulkan/surface.hpp"

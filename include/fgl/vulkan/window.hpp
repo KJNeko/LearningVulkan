@@ -83,8 +83,8 @@ class Window
 		T& windowHints,
 		std::pair<int, int> windowSize,
 		std::string windowName = "",
-		GLFWmonitor* monitor   = nullptr,
-		GLFWwindow* share	   = nullptr )
+		GLFWmonitor* monitor = nullptr,
+		GLFWwindow* share = nullptr )
 		: instance( instanceref ),
 		  device( deviceref ),
 		  windowHandle( createWindowHandle(

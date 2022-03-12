@@ -44,16 +44,16 @@ class Device
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex =
 			fgl::vulkan::internal::findIndexForFlags( deviceRef, flags );
-		queueCreateInfo.queueCount		 = 1;
+		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 
 		VkPhysicalDeviceFeatures deviceFeatures {};
 
 		VkDeviceCreateInfo createInfo {};
-		createInfo.sType				= VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos	= &queueCreateInfo;
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
 		createInfo.queueCreateInfoCount = 1;
-		createInfo.pEnabledFeatures		= &deviceFeatures;
+		createInfo.pEnabledFeatures = &deviceFeatures;
 		createInfo.enabledExtensionCount =
 			static_cast<uint32_t>( deviceExtensions.size() );
 		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
