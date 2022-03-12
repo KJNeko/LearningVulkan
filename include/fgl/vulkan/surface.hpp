@@ -10,13 +10,13 @@ namespace fgl::vulkan
 
 class Surface
 {
-	VkSurfaceKHR surface;
+	VkSurfaceKHR surface {};
 
 	fgl::vulkan::Instance& instance;
 
 	Surface( Surface const& rhs ) = delete;
 	Surface& operator=( Surface const& rhs ) = delete;
-
+	Surface() = delete;
 
   public:
 	operator VkSurfaceKHR&()

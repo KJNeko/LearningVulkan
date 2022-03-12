@@ -27,6 +27,7 @@ class Window
 	fgl::vulkan::Instance& instance;
 	fgl::vulkan::PhysicalDevice& device;
 
+  public:
 	GLFWwindow* windowHandle { nullptr };
 
   public:

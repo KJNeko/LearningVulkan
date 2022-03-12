@@ -12,26 +12,35 @@ namespace internal
 	{
 		if ( !std::filesystem::exists( path ) )
 		{
-			throw std::runtime_error( "fgl::vulkan::internal::readFile() ERROR: Failed to find the file. \n\t\tFilepath:" + path.string() );
+			throw std::runtime_error(
+				"fgl::vulkan::internal::readFile() ERROR: Failed to find the file. \n\t\tFilepath:" +
+				path.string() );
 		}
 		if ( std::ifstream ifs( path, std::ios::ate | std::ios::binary ); ifs )
 		{
-			size_t fileSize = ifs.tellg();
+			size_t fileSize = static_cast<size_t>( ifs.tellg() );
 			std::vector<char> buffer( fileSize );
 
 			ifs.seekg( 0 );
-			ifs.read( buffer.data(), fileSize );
+			ifs.read( buffer.data(), static_cast<long int>( fileSize ) );
 
 			return buffer;
 		}
+		throw std::runtime_error( "Failed to read the file" );
 	}
+
+
 } // namespace internal
 
 class ShaderModule
 {
-	VkShaderModule shaderModule;
+	VkShaderModule shaderModule {};
 
 	fgl::vulkan::Device& parentDevice;
+
+	ShaderModule( const ShaderModule& ) = delete;
+	ShaderModule operator=( const ShaderModule& ) = delete;
+	ShaderModule() = delete;
 
   public:
 	operator VkShaderModule&()
@@ -48,9 +57,10 @@ class ShaderModule
 	void createShader( fgl::vulkan::Device& device, std::vector<char> code )
 	{
 		VkShaderModuleCreateInfo createInfo {};
-		createInfo.sType	= VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
-		createInfo.pCode	= reinterpret_cast<const uint32_t*>( code.data() );
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(
+			reinterpret_cast<void*>( code.data() ) );
 
 		if ( vkCreateShaderModule(
 				 device, &createInfo, nullptr, &shaderModule ) != VK_SUCCESS )

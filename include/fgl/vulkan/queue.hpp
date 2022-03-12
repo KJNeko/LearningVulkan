@@ -12,7 +12,7 @@ namespace internal
 		VkPhysicalDevice deviceref,
 		VkQueueFlagBits flags,
 		bool presentSupportRequired = false,
-		VkSurfaceKHR surface		= nullptr )
+		VkSurfaceKHR surface = nullptr )
 	{
 		uint32_t queueFamilyCount { 0 };
 		vkGetPhysicalDeviceQueueFamilyProperties(
@@ -57,7 +57,7 @@ namespace internal
 
 class Queue
 {
-	VkQueue queue;
+	VkQueue queue {};
 
 	Queue() = delete;
 
@@ -75,7 +75,7 @@ class Queue
 		VkPhysicalDevice& physicalDevice,
 		VkQueueFlagBits flags,
 		bool presentSupportRequired = false,
-		VkSurfaceKHR surface		= nullptr )
+		VkSurfaceKHR surface = nullptr )
 	{
 		// Find the index for the bits we want
 		uint32_t index = internal::findIndexForFlags(

@@ -94,6 +94,11 @@ class Device
 		return deviceQueue;
 	}
 
+	VkQueue& getPresentQueue()
+	{
+		return presentQueue;
+	}
+
 	// Formatter gets a little confused with the requires statement
 	// clang-format off
 	template <std::ranges::forward_range T>
@@ -111,6 +116,11 @@ class Device
 		swapChain( device, physicalDevice, window)
 	{}
 	// clang-format on
+
+	~Device()
+	{
+		vkDeviceWaitIdle( *this );
+	}
 };
 
 } // namespace fgl::vulkan

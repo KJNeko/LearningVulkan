@@ -9,14 +9,18 @@ namespace fgl::vulkan
 
 class Swapchain
 {
-	VkSwapchainKHR swapChain;
-
 	VkDevice& parentDevice;
 
+	VkSwapchainKHR swapChain {};
+
+	Swapchain( const Swapchain& ) = delete;
+	Swapchain operator=( const Swapchain& ) = delete;
+	Swapchain() = delete;
+
   public:
-	operator VkSwapchainKHR()
+	operator VkSwapchainKHR*()
 	{
-		return swapChain;
+		return &swapChain;
 	}
 
 	operator VkSwapchainKHR&()
@@ -24,10 +28,9 @@ class Swapchain
 		return swapChain;
 	}
 
-	std::vector<VkImage> swapChainImages;
-	VkFormat swapChainImageFormat;
-	VkExtent2D swapChainExtent;
-
+	VkFormat swapChainImageFormat {};
+	VkExtent2D swapChainExtent {};
+	std::vector<VkImage> swapChainImages {};
 
 	Swapchain(
 		VkDevice& device,
