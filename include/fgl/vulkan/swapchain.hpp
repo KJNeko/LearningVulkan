@@ -160,15 +160,15 @@ class Swapchain
 		}
 
 		VkSwapchainCreateInfoKHR createInfo {};
-		createInfo.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = window.surface;
 
-		createInfo.minImageCount	= imageCount;
-		createInfo.imageFormat		= selectedFormat.format;
-		createInfo.imageColorSpace	= selectedFormat.colorSpace;
-		createInfo.imageExtent		= swapExtent;
+		createInfo.minImageCount = imageCount;
+		createInfo.imageFormat = selectedFormat.format;
+		createInfo.imageColorSpace = selectedFormat.colorSpace;
+		createInfo.imageExtent = swapExtent;
 		createInfo.imageArrayLayers = 1;
-		createInfo.imageUsage		= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		auto graphicsIndex = fgl::vulkan::internal::findIndexForFlags(
 			physicalDevice, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT );
@@ -183,20 +183,20 @@ class Swapchain
 
 		if ( graphicsIndex != presentIndex )
 		{
-			createInfo.imageSharingMode		 = VK_SHARING_MODE_CONCURRENT;
+			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			createInfo.queueFamilyIndexCount = 2;
-			createInfo.pQueueFamilyIndices	 = queueFamilyIndicies;
+			createInfo.pQueueFamilyIndices = queueFamilyIndicies;
 		}
 		else
 		{
 			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		}
 
-		createInfo.preTransform	  = capabilities.currentTransform;
+		createInfo.preTransform = capabilities.currentTransform;
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		createInfo.presentMode	  = presentationMode;
-		createInfo.clipped		  = VK_TRUE;
-		createInfo.oldSwapchain	  = VK_NULL_HANDLE;
+		createInfo.presentMode = presentationMode;
+		createInfo.clipped = VK_TRUE;
+		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		if ( vkCreateSwapchainKHR( device, &createInfo, nullptr, &swapChain ) !=
 			 VK_SUCCESS )
@@ -210,7 +210,7 @@ class Swapchain
 			device, swapChain, &imageCount, swapChainImages.data() );
 
 		swapChainImageFormat = selectedFormat.format;
-		swapChainExtent		 = swapExtent;
+		swapChainExtent = swapExtent;
 	}
 
 	~Swapchain()
