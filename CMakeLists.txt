@@ -29,7 +29,7 @@ endif()
 SET(TEMPINCLUDE "/home/kj16609/Desktop/Projects/vulkan/include")
 SET(TEMPFGL "/home/kj16609/Desktop/Projects/vulkan/libFGL/include")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I'${TEMPINCLUDE}' -I'${TEMPFGL}' ${OSFLAGS} -Ofast -std=c++20 -lGLU -ldl -lglfw -lvulkan ${WARNINGFLAGS} ${CODEGENFLAGS} ${OPTIONALFLAGS}" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I'${TEMPINCLUDE}' -I'${TEMPFGL}' ${OSFLAGS} -Ofast -std=c++20 -ldl -lglfw -lvulkan ${WARNINGFLAGS} ${CODEGENFLAGS} ${OPTIONALFLAGS}" )
 
 
 

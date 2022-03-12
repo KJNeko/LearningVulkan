@@ -2,7 +2,7 @@
 BasedOnStyle: Microsoft
 AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveMacros: 'false'
-AlignConsecutiveAssignments: 'Consecutive'
+AlignConsecutiveAssignments: 'false'
 AlignConsecutiveDeclarations: 'false'
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
