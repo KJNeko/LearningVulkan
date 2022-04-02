@@ -15,19 +15,7 @@ set(CMAKE_CONFIGURATION_TYEPS "Release;Dev" CACHE STRING "" FORCE)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Og -DDEBUG -lpqxx -lssl -lcrypto -lpq -Werror=cpp -Wall -Wextra -pthread -pedantic -fmax-errors=3 -Wundef -Wnull-dereference -Wduplicated-cond -Wduplicated-branches -Wshadow -Wswitch -Wswitch-enum -Wstrict-overflow=5 -Wconversion -Wfloat-equal -Wdouble-promotion -Wwrite-strings -Wpointer-arith -Wcast-qual -Wformat=2 -Wformat-signedness -Wformat-y2k -Wformat-overflow=2 -Wold-style-cast -Wnon-virtual-dtor -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override -Wsized-deallocation -Wextra-semi -Wmultiple-inheritance -Wzero-as-null-pointer-constant -Werror") #-fuse-linker-plugin -flto -fno-fat-lto-objects")
 #-fanalyzer 
-
-set(WARNINGFLAGS "-Wall -Wextra -Wundef -Wnull-dereference -Wpedantic -pedantic-errors -Weffc++ -Wnoexcept -Wuninitialized -Wunused -Wunused-parameter -Winit-self -Wconversion -Wuseless-cast -Wextra-semi -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override  -Wformat-signedness -Wno-format-zero-length -Wmissing-include-dirs -Wshift-overflow=2 -Walloc-zero -Walloca -Wsign-promo -Wconversion -Wduplicated-branches -Wduplicated-cond -Wfloat-equal -Wshadow -Wshadow=local -Wmultiple-inheritance -Wvirtual-inheritance -Wno-virtual-move-assign -Wunsafe-loop-optimizations -Wnormalized -Wpacked -Wredundant-decls -Wmismatched-tags -Wredundant-tags -Wctor-dtor-privacy -Wdeprecated-copy-dtor -Wstrict-null-sentinel -Wold-style-cast -Woverloaded-virtual -Wzero-as-null-pointer-constant -Wconditionally-supported -Werror=pedantic -Wwrite-strings -Wmultiple-inheritance -Wunused-const-variable=2 -Wdouble-promotion -Wpointer-arith -Wcast-align=strict -Wcast-qual -Wconversion -Wsign-conversion -Wimplicit-fallthrough=1 -Wmisleading-indentation -Wdangling-else -Wdate-time -Wformat=2 -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=2 -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Wstringop-overflow=4 -Warray-bounds=2 -Wattribute-alias=2 -Wcatch-value=2 -Wplacement-new=2 -Wtrampolines")
-set(CODEGENFLAGS "-fstrict-aliasing -fno-omit-frame-pointer -fstack-check -ftrapv -fwrapv -fverbose-asm -femit-class-debug-always -fanalyzer")
-set(OPTIONALFLAGS "-fmax-errors=3 -Wpadded -fconcepts-diagnostics-depth=4 -fno-analyzer")
-
-if(WIN32)
-	set(OSFLAGS "")
-elseif(UNIX)
-	set(OSFLAGS "-lpthread")
-endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I'./include/' -I'./libFGL/include' ${OSFLAGS} -Ofast -std=c++20 -lGLU -ldl -lglfw ${WARNINGFLAGS} ${CODEGENFLAGS} ${OPTIONALFLAGS}" )
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I'${CMAKE_SOURCE_DIR}/include' -I'${CMAKE_SOURCE_DIR}/libFGL/include' -Ofast -std=c++20 -lpthread -lvulkan -ldl -fmax-errors=3 -Wall -Wextra -Wundef -Wnull-dereference -Wpedantic -pedantic-errors -Wuninitialized -Wunused -Wunused-parameter -Winit-self -Wconversion -Wuseless-cast -Wextra-semi -Wsuggest-final-types -Wsuggest-final-methods -Wsuggest-override  -Wformat-signedness -Wno-format-zero-length -Wmissing-include-dirs -Wshift-overflow=2 -Walloc-zero -Walloca -Wsign-promo -Wconversion -Wduplicated-branches -Wduplicated-cond -Wfloat-equal -Wshadow -Wshadow=local -Wmultiple-inheritance -Wvirtual-inheritance -Wno-virtual-move-assign -Wunsafe-loop-optimizations -Wenum-conversion -Wnormalized -Wpacked -Wredundant-decls -Wmismatched-tags -Wredundant-tags -Wctor-dtor-privacy -Wdeprecated-copy-dtor -Wstrict-null-sentinel -Wold-style-cast -Woverloaded-virtual -Wzero-as-null-pointer-constant -Wconditionally-supported -Werror=pedantic -Wwrite-strings -Wmultiple-inheritance -Wunused-const-variable=2 -Wdouble-promotion -Warith-conversion -Wpointer-arith -Wcast-qual -Wconversion -Wsign-conversion -Wimplicit-fallthrough=1 -Wmisleading-indentation -Wdangling-else -Wdate-time -Wformat=2 -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=2 -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Wstringop-overflow=4 -Warray-bounds=2 -Wattribute-alias=2 -Wcatch-value=2 -Wplacement-new=2 -Wtrampolines")
 
 
 
@@ -37,7 +25,6 @@ set(CMAKE_MAKE_PROGRAM make)
 
 
 find_package(Vulkan REQUIRED)
-include_directories(${Vulkan_INCLUDE_DIRS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #inclusion of project files#
@@ -52,7 +39,7 @@ add_custom_command(
     COMMAND glslc "${SOURCE_DIR}/Square.comp" -o "${CMAKE_SOURCE_DIR}/Square.spv"
     DEPENDS "${SOURCE_DIR}/Square.comp"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Buiding Shaders"
+    COMMENT "Building Shaders"
 )
 
 add_custom_target(ComputeShader DEPENDS "${CMAKE_SOURCE_DIR}/Square.spv")
@@ -64,8 +51,6 @@ file(GLOB_RECURSE SOURCES
 )
 
 ##SETUP EXE##
-
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS})
 
 if(WIN32)
     add_executable(VulkanCompute WIN32 ${SOURCES})
